@@ -1,0 +1,23 @@
+# Game Overhaul Tasks
+
+- [ ] **Game Flow Balancing**
+  - [ ] Reduce Wave Timer by 3x (90s -> 30s)
+  - [ ] Reduce Seed Growth Time by 3x (180s -> 60s)
+  - [ ] Reduce Generator Production Time by 3x
+  - [ ] Add Attack Cooldown to Player (0.5s?)
+- [ ] **Auto-Interaction**
+  - [ ] Remove click requirement for attacking/harvesting.
+  - [ ] Implement auto-attack nearest enemy/resource within range.
+- [ ] **Grid System (Tiling)**
+  - [ ] Implement grid snapping for Build Mode.
+  - [ ] Enforce one building per grid cell.
+  - [ ] Visual grid indicator during placement.
+- [ ] **World Boundaries**
+  - [ ] Define World Size.
+  - [ ] Clamp Player position to World Size.
+  - [ ] Clamp Camera (optional, or just player).
+- [ ] **Visuals & Sprites**
+  - [ ] Change background color to green (Grass).
+  - [ ] **Procedural Sprites**: Implement `draw` methods using multiple shapes for Trees, Rocks, Turrets, etc.
+  - [ ] **Player Trail**: Add random perpendicular offset to trail particles.
+  - [ ] Update default shapes/colors for better "nature" look.

@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Unity-specific exclusions
+unity_project/My project (1)/Library/
+unity_project/My project (1)/Temp/
+unity_project/My project (1)/Obj/
+unity_project/My project (1)/Build/
+unity_project/My project (1)/Builds/
+unity_project/My project (1)/Logs/
+unity_project/My project (1)/MemoryCaptures/
+unity_project/My project (1)/PackageCache/
+unity_project/My project (1)/UserSettings/
