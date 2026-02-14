@@ -663,7 +663,7 @@ export class Game {
         for (const entity of this.entities) {
             const dist = Math.hypot(worldX - entity.x, worldY - entity.y);
 
-            if (entity.constructor.name === 'Turret' && dist < entity.radius + 15) {
+            if (entity.type === 'turret' && dist < entity.radius + 15) {
                 // Draw turret stats in yellow
                 const dps = (entity.damage / entity.fireRate).toFixed(1);
                 const text = `${entity.turretType.toUpperCase()} | DMG: ${entity.damage} | Rate: ${entity.fireRate.toFixed(2)}s | DPS: ${dps} | Range: ${entity.range}`;
@@ -689,7 +689,7 @@ export class Game {
                 this.ctx.fillText(text, mouseX + 15, mouseY - 14);
                 this.ctx.restore();
                 return; // Only show one tooltip
-            } else if (entity.constructor.name === 'Player' && dist < entity.radius + 15) {
+            } else if (entity.type === 'player' && dist < entity.radius + 15) {
                 // Draw player buffs
                 const buffs = [];
                 if (entity.buffs.attackDamage > 1.0) {
