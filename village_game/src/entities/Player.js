@@ -81,9 +81,8 @@ export class Player extends Entity {
         this.floatTime += dt * 2; // Speed of float
 
         if (movement.x !== 0 || movement.y !== 0) {
-            const len = Math.sqrt(movement.x * movement.x + movement.y * movement.y);
-            this.x += (movement.x / len) * effectiveSpeed * dt;
-            this.y += (movement.y / len) * effectiveSpeed * dt;
+            this.x += movement.x * effectiveSpeed * dt;
+            this.y += movement.y * effectiveSpeed * dt;
 
             // Update facing direction
             if (movement.x > 0) this.facingRight = true;
@@ -98,7 +97,7 @@ export class Player extends Entity {
 
             // Trail Effect with Offset
             if (this.game && this.game.particleSystem && Math.random() > 0.7) {
-                // Calculate perpendicular vector
+                const len = Math.hypot(movement.x, movement.y);
                 const dirX = movement.x / len;
                 const dirY = movement.y / len;
                 const perpX = -dirY;

@@ -1,8 +1,9 @@
 import { Entity } from './Entity.js';
 
 export class House extends Entity {
-    constructor(x, y) {
+    constructor(x, y, game) {
         super(x, y, 40, '#8b4513'); // Brown house
+        this.game = game;
         this.type = 'house';
         this.maxHealth = 2000; // Increased HP
         this.health = this.maxHealth;
@@ -64,5 +65,8 @@ export class House extends Entity {
 
     takeDamage(amount) {
         this.health -= amount;
+        if (this.game) {
+            this.game.screenShake(5, 0.3); // Shake on damage
+        }
     }
 }

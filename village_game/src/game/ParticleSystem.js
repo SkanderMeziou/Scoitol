@@ -75,6 +75,24 @@ export class ParticleSystem {
         ));
     }
 
+    createExplosion(x, y, color, count = 10, size = 5) {
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 50 + Math.random() * 100;
+            const velX = Math.cos(angle) * speed;
+            const velY = Math.sin(angle) * speed;
+            const life = 0.5 + Math.random() * 0.5;
+
+            this.particles.push(new Particle(
+                x, y, color,
+                { x: velX, y: velY },
+                life,
+                size,
+                true
+            ));
+        }
+    }
+
     update(dt) {
         this.particles.forEach(p => p.update(dt));
         this.particles = this.particles.filter(p => !p.markedForDeletion);

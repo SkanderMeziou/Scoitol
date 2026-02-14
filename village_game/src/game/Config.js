@@ -13,13 +13,13 @@ export const Config = {
 
     // Entities
     SEED_GROWTH_TIME: 60.0,
-    GENERATOR_PRODUCTION_TIME: 1.0,
-    
+    GENERATOR_PRODUCTION_TIME: 20.0,
+
     // Enemy Stats
     ENEMY_BASE_POWER: 0.25, // Base power for wave 1
     ENEMY_POWER_SCALING: 1.3, // Multiplier per wave (power = base * scaling^(wave-1))
     ENEMY_POWER_VARIANCE: 6.0, // Variance factor k for power distribution (higher = more extreme variance)
-    
+
     // Player
     PLAYER_SPEED: 200,
     PLAYER_ATTACK_COOLDOWN: 0.2,
@@ -28,7 +28,7 @@ export const Config = {
     PLAYER_SPEED: 200,
     PLAYER_ATTACK_COOLDOWN: 0.2,
     PLAYER_BUILD_COOLDOWN: 0.2,
-    
+
     // Visual Sizes (Multipliers)
     PLAYER_SIZE_MULTIPLIER: 0.8, // Make player slightly smaller
     TREE_SIZE_MULTIPLIER: 1.5,   // Make trees larger
@@ -45,7 +45,7 @@ export const Config = {
         ruby: '#c0392b',
         sapphire: '#2980b9'
     },
-    
+
     // Material Rarity Scores (for balancing)
     MATERIAL_RARITY: {
         wood: 1,

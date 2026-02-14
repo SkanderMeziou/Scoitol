@@ -25,9 +25,8 @@ export class Building extends Entity {
         if (type === 'mega_fort') color = '#2c3e50'; // Dark grey
         if (type === 'super_col') color = '#9b59b6'; // Purple
 
-        // Buff buildings
-        if (type.startsWith('buff_attack')) color = '#e74c3c'; // Red for attack
-        if (type.startsWith('buff_speed')) color = '#27ae60'; // Green for speed
+        if (type.startsWith('buff_attack')) color = '#e74c3c';
+        if (type.startsWith('buff_speed')) color = '#27ae60';
 
         let radius = 25;
         if (type === 'mega_wall' || type === 'mega_fort' || type === 'super_col') {
@@ -50,14 +49,7 @@ export class Building extends Entity {
             this.timer = this.interval;
         }
 
-        // Worker Logic
-        this.worker = null;
-        if (type === 'wood_col' || type === 'stone_col' || type === 'iron_col' || type === 'universal_col' || type === 'collector_novice') {
-            this.interval = 1.0; // Check worker status often
-            this.timer = this.interval;
-        }
 
-        // Mega buildings - tanky and powerful
         if (type === 'mega_wall' || type === 'mega_fort') {
             this.interval = 0.5; // Active defense
             this.timer = this.interval;
@@ -65,7 +57,6 @@ export class Building extends Entity {
             this.maxHealth = 5000;
         }
 
-        // Spawn animation disabled for performance
         this.spawnScale = 1;
         this.targetScale = 1;
     }
@@ -77,65 +68,51 @@ export class Building extends Entity {
             this.timer = this.interval;
         }
 
-        // Update owned worker if any
-        if (this.worker) {
-            this.worker.update(dt, entities);
-        }
 
         // Check and apply buffs
         this.checkBuffs(entities);
     }
 
     performAction(entities) {
+        const player = entities.find(e => e.type === 'player');
+        if (!player) return;
+
         if (this.buildingType === 'wood_gen') {
-            this.spawnResource(entities, 'tree');
+            player.inventory.wood += 5;
+            player.addResourceDelta('wood', 5);
             this.generatedCount++;
         } else if (this.buildingType === 'stone_gen') {
-            this.spawnResource(entities, 'rock');
+            player.inventory.stone += 5;
+            player.addResourceDelta('stone', 5);
             this.generatedCount++;
         } else if (this.buildingType === 'iron_gen') {
-            this.spawnResource(entities, 'iron');
+            player.inventory.iron += 2;
+            player.addResourceDelta('iron', 2);
             this.generatedCount++;
         } else if (this.buildingType === 'crystal_gen') {
-            this.spawnResource(entities, 'crystal');
+            player.inventory.crystal += 2;
+            player.addResourceDelta('crystal', 2);
             this.generatedCount++;
         } else if (this.buildingType === 'obsidian_gen') {
-            this.spawnResource(entities, 'obsidian');
+            player.inventory.obsidian += 2;
+            player.addResourceDelta('obsidian', 2);
             this.generatedCount++;
         } else if (this.buildingType === 'diamond_gen') {
-            this.spawnResource(entities, 'diamond');
+            player.inventory.diamond += 1;
+            player.addResourceDelta('diamond', 1);
             this.generatedCount++;
         } else if (this.buildingType === 'emerald_gen') {
-            this.spawnResource(entities, 'emerald');
+            player.inventory.emerald += 1;
+            player.addResourceDelta('emerald', 1);
             this.generatedCount++;
         } else if (this.buildingType === 'ruby_gen') {
-            this.spawnResource(entities, 'ruby');
+            player.inventory.ruby += 1;
+            player.addResourceDelta('ruby', 1);
             this.generatedCount++;
         } else if (this.buildingType === 'sapphire_gen') {
-            this.spawnResource(entities, 'sapphire');
+            player.inventory.sapphire += 1;
+            player.addResourceDelta('sapphire', 1);
             this.generatedCount++;
-        } else if (this.buildingType === 'wood_col') {
-            if (!this.worker) {
-                this.worker = new Worker(this.x, this.y, this, 'tree');
-            }
-        } else if (this.buildingType === 'stone_col') {
-            if (!this.worker) {
-                this.worker = new Worker(this.x, this.y, this, 'rock');
-            }
-        } else if (this.buildingType === 'iron_col') {
-            if (!this.worker) {
-                this.worker = new Worker(this.x, this.y, this, 'iron');
-            }
-        } else if (this.buildingType === 'universal_col') {
-            if (!this.worker) {
-                this.worker = new Worker(this.x, this.y, this, 'all'); // Collects all resources
-            }
-        } else if (this.buildingType === 'collector_novice') {
-            if (!this.worker) {
-                this.worker = new Worker(this.x, this.y, this, 'all');
-                this.worker.maxInventory = 1; // Only 1 item
-                this.worker.speed = 50; // Slow
-            }
         } else if (this.buildingType === 'alchemy') {
             const player = entities.find(e => e.type === 'player');
             if (player) {
@@ -144,19 +121,21 @@ export class Building extends Entity {
                 this.flashTime = 0.5;
             }
         } else if (this.buildingType === 'mega_wall') {
-            // Mega Wall: Damages nearby enemies
             entities.forEach(e => {
                 if (e.type === 'enemy') {
                     const dist = Math.hypot(e.x - this.x, e.y - this.y);
                     if (dist < 150) {
-                        e.takeDamage(50); // Heavy damage in range
+                        e.takeDamage(50);
                     }
                 }
             });
         } else if (this.buildingType === 'mega_fort') {
-            // Mega Fort: Spawns resources AND damages enemies
-            this.spawnResource(entities, 'tree');
-            this.spawnResource(entities, 'rock');
+            if (player) {
+                player.inventory.wood += 5;
+                player.addResourceDelta('wood', 5);
+                player.inventory.stone += 5;
+                player.addResourceDelta('stone', 5);
+            }
             entities.forEach(e => {
                 if (e.type === 'enemy') {
                     const dist = Math.hypot(e.x - this.x, e.y - this.y);
@@ -223,13 +202,6 @@ export class Building extends Entity {
         }
     }
 
-    spawnResource(entities, type) {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 40 + Math.random() * 40;
-        const x = this.x + Math.cos(angle) * dist;
-        const y = this.y + Math.sin(angle) * dist;
-        entities.push(new Resource(x, y, type));
-    }
 
     draw(ctx) {
         // Draw Hexagon for buildings
@@ -260,17 +232,5 @@ export class Building extends Entity {
             ctx.stroke();
         }
 
-        // Draw Flag for collectors
-        if (this.buildingType.includes('_col')) {
-            ctx.fillStyle = 'white';
-            ctx.fillRect(this.x - 2, this.y - 20, 4, 20);
-            ctx.fillStyle = 'red';
-            ctx.fillRect(this.x, this.y - 20, 15, 10);
-        }
-
-        // Draw Worker
-        if (this.worker) {
-            this.worker.draw(ctx);
-        }
     }
 }

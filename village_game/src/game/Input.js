@@ -1,3 +1,5 @@
+import { Joystick } from './Joystick.js';
+
 export class Input {
     constructor() {
         this.keys = new Set();
@@ -11,6 +13,11 @@ export class Input {
         window.addEventListener('mouseup', (e) => this.onMouseUp(e));
         window.addEventListener('contextmenu', (e) => e.preventDefault());
         window.addEventListener('wheel', (e) => this.onWheel(e), { passive: false });
+
+        // Virtual Joystick
+        this.joystick = new Joystick(100, window.innerHeight - 100, 50);
+        // Resize listener to update joystick position? 
+        // We'll handle resize in Game.js/resize likely, or just fixed position for now based on initial window
     }
 
     onKeyDown(e) {
@@ -61,7 +68,44 @@ export class Input {
         // Left
         if (this.isDown('KeyA') || this.isDown('KeyQ') || this.isDown('ArrowLeft')) x -= 1;
         // Right
+        // Right
         if (this.isDown('KeyD') || this.isDown('ArrowRight')) x += 1;
+
+        // Joystick
+        if (this.joystick.active) {
+            x = this.joystick.value.x;
+            y = this.joystick.value.y;
+        }
+
+        // Gamepad
+        const gamepads = navigator.getGamepads();
+        if (gamepads) {
+            for (const gp of gamepads) {
+                if (gp) {
+                    // Axis 0: Left Stick X
+                    // Axis 1: Left Stick Y
+                    if (Math.abs(gp.axes[0]) > 0.1) x = gp.axes[0];
+                    if (Math.abs(gp.axes[1]) > 0.1) y = gp.axes[1];
+                    // D-Pad usually mapped to axes or buttons depending on browser/pad
+                    // Button 12, 13, 14, 15 are Up, Down, Left, Right usually
+                    if (gp.buttons[12].pressed) y -= 1;
+                    if (gp.buttons[13].pressed) y += 1;
+                    if (gp.buttons[14].pressed) x -= 1;
+                    if (gp.buttons[15].pressed) x += 1;
+                    break; // Use first gamepad
+                }
+            }
+        }
+
+        // Normalize vector if length > 1 (to prevent faster diagonal movement for keyboard/dpad)
+        // But for analog stick we want full range.
+        // Let's just clamp components to -1, 1 for now, or normalize.
+        // Actually, for analog, magnitude matters.
+        const len = Math.hypot(x, y);
+        if (len > 1.0) {
+            x /= len;
+            y /= len;
+        }
 
         return { x, y };
     }
