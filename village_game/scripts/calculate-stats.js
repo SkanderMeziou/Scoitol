@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * Utility script to calculate and display craft difficulties and turret DPS
- * Run with: node scripts/calculate-stats.js
- */
 
 import { Recipes } from '../src/game/Recipes.js';
 import { Config } from '../src/game/Config.js';
@@ -82,7 +78,7 @@ turrets.sort((a, b) => a.difficulty - b.difficulty).forEach(({ name, recipe, dif
 
 console.log();
 
-// Display Generators
+
 console.log('GENERATORS');
 console.log('-'.repeat(80));
 console.log('Name'.padEnd(20) + 'Cost'.padEnd(30) + 'Difficulty');
@@ -102,7 +98,7 @@ generators.sort((a, b) => a.difficulty - b.difficulty).forEach(({ name, recipe, 
 
 console.log();
 
-// Display Collectors
+
 console.log('COLLECTORS');
 console.log('-'.repeat(80));
 console.log('Name'.padEnd(20) + 'Cost'.padEnd(30) + 'Difficulty');
