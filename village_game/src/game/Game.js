@@ -403,7 +403,7 @@ export class Game {
             const instructions = [
                 "Controls:",
                 "- WASD / ZQSD / Arrows to Move",
-                "- Build menu on the right border",
+                "- The build menu is docked on the right.",
                 "- Protect the House!"
             ];
 
