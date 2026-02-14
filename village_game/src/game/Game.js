@@ -555,18 +555,18 @@ export class Game {
             let name = hoveredEntity.type.toUpperCase();
             let stats = [];
 
-            if (name === 'Turret') {
+            if (name === 'TURRET') {
                 name = hoveredEntity.turretType.charAt(0).toUpperCase() + hoveredEntity.turretType.slice(1) + ' Turret';
                 stats.push(`Kills: ${hoveredEntity.killCount}`);
                 stats.push(`Damage: ${Math.round(hoveredEntity.damage)}`);
-            } else if (name === 'Building') {
+            } else if (name === 'BUILDING') {
                 name = hoveredEntity.buildingType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
                 if (hoveredEntity.generatedCount !== undefined) {
                     stats.push(`Generated: ${hoveredEntity.generatedCount}`);
                 }
-            } else if (name === 'Resource') {
-                name = hoveredEntity.type.charAt(0).toUpperCase() + hoveredEntity.type.slice(1);
-            } else if (name === 'Enemy') {
+            } else if (name === 'RESOURCE') {
+                name = hoveredEntity.resourceType.charAt(0).toUpperCase() + hoveredEntity.resourceType.slice(1);
+            } else if (name === 'ENEMY') {
                 name = hoveredEntity.enemyType.charAt(0).toUpperCase() + hoveredEntity.enemyType.slice(1);
                 stats.push(`HP: ${Math.round(hoveredEntity.health)}/${Math.round(hoveredEntity.maxHealth)}`);
                 stats.push(`Speed: ${Math.round(hoveredEntity.speed)}`);
