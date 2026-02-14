@@ -38,7 +38,7 @@ export class Player extends Entity {
 
         // Sprite Animation
         this.sprite = new Image();
-        this.sprite.src = '/village_game/assets/player_spritesheet.png';
+        this.sprite.src = './assets/player_spritesheet.png';
         this.frameWidth = 256;
         this.frameHeight = 256;
         this.totalFrames = 13;
@@ -46,7 +46,7 @@ export class Player extends Entity {
         this.frameTimer = 0;
         this.frameInterval = 0.08; // Adjust for animation speed
         this.facingRight = true;
-        
+
         // Floating Animation
         this.floatTime = 0;
     }
@@ -75,7 +75,7 @@ export class Player extends Entity {
             this.currentFrame = (this.currentFrame + 1) % this.totalFrames;
             this.frameTimer = 0;
         }
-        
+
         // Update Floating
         this.floatTime += dt * 2; // Speed of float
 
@@ -102,14 +102,14 @@ export class Player extends Entity {
                 const dirY = movement.y / len;
                 const perpX = -dirY;
                 const perpY = dirX;
-                
+
                 // Random offset [-radius, radius]
                 const offset = (Math.random() - 0.5) * 2 * this.radius;
-                
+
                 this.game.particleSystem.emit(
-                    this.x + perpX * offset, 
-                    this.y + perpY * offset, 
-                    this.color, 4, 
+                    this.x + perpX * offset,
+                    this.y + perpY * offset,
+                    this.color, 4,
                     { life: 0.4, size: 2 }
                 );
             }
@@ -162,12 +162,12 @@ export class Player extends Entity {
     isMouseOverUI() {
         // Simple check if mouse is on the right side where the menu is
         // But BuildMenu handles its own hit detection now
-        return false; 
+        return false;
     }
 
     tryBuild(entities, mouseX, mouseY) {
         if (!this.selectedBuild) return null;
-        
+
         const recipe = Recipes[this.selectedBuild];
         if (!recipe) return null;
 
@@ -229,7 +229,7 @@ export class Player extends Entity {
     draw(ctx) {
         // Determine if buffed
         const isBuffed = this.buffs.attackDamage > 1.0 || this.buffs.speed > 1.0;
-        
+
         // Calculate floating offset
         const floatY = Math.sin(this.floatTime) * 5; // +/- 5 pixels
 
@@ -240,28 +240,28 @@ export class Player extends Entity {
             if (!this.facingRight) {
                 ctx.scale(-1, 1);
             }
-            
+
             // Draw centered
             // Scale down the sprite? 256x256 is huge compared to radius 15
             // Radius 15 means diameter 30.
             // Let's scale it to be roughly 60x60 visual size?
             const baseSize = 64;
             const drawSize = baseSize * (Config.PLAYER_SIZE_MULTIPLIER || 1.0);
-            
+
             ctx.drawImage(
                 this.sprite,
                 this.currentFrame * this.frameWidth, 0, this.frameWidth, this.frameHeight,
-                -drawSize/2, -drawSize/2, drawSize, drawSize
+                -drawSize / 2, -drawSize / 2, drawSize, drawSize
             );
-            
+
             ctx.restore();
         } else {
             // Fallback to circle if sprite not loaded
-             ctx.fillStyle = this.color;
-             ctx.beginPath();
-             ctx.arc(this.x, this.y + floatY, this.radius * (Config.PLAYER_SIZE_MULTIPLIER || 1.0), 0, Math.PI * 2);
-             ctx.fill();
-             ctx.closePath();
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y + floatY, this.radius * (Config.PLAYER_SIZE_MULTIPLIER || 1.0), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.closePath();
         }
 
         // Player morph effect or buffed blink (Overlay)
@@ -274,7 +274,7 @@ export class Player extends Entity {
             ctx.globalAlpha = 1.0;
             this.morphTime -= 0.016;
         } else if (isBuffed) {
-             // Blink if buffed
+            // Blink if buffed
             this.blinkTime += 0.1;
             const blink = Math.sin(this.blinkTime * 10) > 0;
             if (blink) {
@@ -291,7 +291,7 @@ export class Player extends Entity {
             // Get world coordinates for mouse
             const worldX = this.game ? this.getWorldX(this.input.mouse.x) : this.input.mouse.x;
             const worldY = this.game ? this.getWorldY(this.input.mouse.y) : this.input.mouse.y;
-            
+
             // Snap to grid
             const gridSize = 50;
             const gridX = Math.round(worldX / gridSize) * gridSize;
@@ -303,7 +303,7 @@ export class Player extends Entity {
             ctx.arc(gridX, gridY, 25, 0, Math.PI * 2);
             ctx.stroke();
             ctx.closePath();
-            
+
             // Draw grid cell
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
             ctx.strokeRect(gridX - 25, gridY - 25, 50, 50);
@@ -318,13 +318,13 @@ export class Player extends Entity {
 
         // Prioritize enemies
         if (this.game && this.game.enemies) {
-             for (const enemy of this.game.enemies) {
+            for (const enemy of this.game.enemies) {
                 const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
                 if (dist < range + enemy.radius && dist < minDist) {
                     minDist = dist;
                     nearest = enemy;
                 }
-             }
+            }
         }
 
         // If no enemy, check resources
@@ -341,19 +341,19 @@ export class Player extends Entity {
         if (nearest && nearest.takeDamage) {
             nearest.takeDamage(1);
             this.attackCooldown = Config.PLAYER_ATTACK_COOLDOWN;
-            
+
             // Visual feedback for attack?
             // Maybe a small "slash" particle towards target
             if (this.game && this.game.particleSystem) {
-                 const dx = nearest.x - this.x;
-                 const dy = nearest.y - this.y;
-                 const len = Math.hypot(dx, dy);
-                 this.game.particleSystem.emit(
-                     this.x + (dx/len)*20, 
-                     this.y + (dy/len)*20, 
-                     '#ffffff', 1, 
-                     { speed: 50, life: 0.2, size: 3 }
-                 );
+                const dx = nearest.x - this.x;
+                const dy = nearest.y - this.y;
+                const len = Math.hypot(dx, dy);
+                this.game.particleSystem.emit(
+                    this.x + (dx / len) * 20,
+                    this.y + (dy / len) * 20,
+                    '#ffffff', 1,
+                    { speed: 50, life: 0.2, size: 3 }
+                );
             }
         }
     }
