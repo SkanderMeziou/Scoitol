@@ -235,7 +235,7 @@ export class Game {
             this.screenShake(2, 0.2); // Small shake on enemy death
 
             if (entity.lastHitSource && entity.lastHitSource.turretType === 'money') {
-                
+
                 const types = ['wood', 'stone', 'iron', 'crystal'];
                 const type = types[Math.floor(Math.random() * types.length)];
                 const amount = 5;
@@ -287,7 +287,7 @@ export class Game {
         const angle = Math.random() * Math.PI * 2;
         // Adjust spawn distance based on zoom
         const baseDistance = Math.max(this.canvas.width, this.canvas.height) / 2 + 100;
-        
+
         const zoomFactor = this.currentZoomScale || 1.0;
         const dist = baseDistance / zoomFactor;
 
@@ -403,8 +403,7 @@ export class Game {
             const instructions = [
                 "Controls:",
                 "- WASD / ZQSD / Arrows to Move",
-                "- Click Resources to Gather",
-                "- Press 'B' to Build",
+                "- Build menu on the right border",
                 "- Protect the House!"
             ];
 
@@ -428,7 +427,7 @@ export class Game {
 
         // Smooth zoom transition
         if (!this.currentZoomScale) this.currentZoomScale = targetScale;
-        const lerpSpeed = 2.0; 
+        const lerpSpeed = 2.0;
         this.currentZoomScale += (targetScale - this.currentZoomScale) * lerpSpeed * this.step;
 
         const scale = this.currentZoomScale;

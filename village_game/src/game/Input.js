@@ -97,10 +97,6 @@ export class Input {
             }
         }
 
-        // Normalize vector if length > 1 (to prevent faster diagonal movement for keyboard/dpad)
-        // But for analog stick we want full range.
-        // Let's just clamp components to -1, 1 for now, or normalize.
-        // Actually, for analog, magnitude matters.
         const len = Math.hypot(x, y);
         if (len > 1.0) {
             x /= len;

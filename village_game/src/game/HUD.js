@@ -33,10 +33,7 @@ export class HUD {
     }
     
     if (this.notificationTimer > 0) {
-        this.notificationTimer -= 0.1; // Approx dt since called every frame? No, update is called in Game loop with dt?
-        // Wait, HUD.update() in Game.js is called without dt?
-        // Game.js line 204: this.hud.update();
-        // It's called every frame. Let's assume 60fps, so subtract 1/60.
+        this.notificationTimer -= 0.1; 
         this.notificationTimer -= 1/60;
         if (this.notificationTimer <= 0) this.notification = null;
     }
