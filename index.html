@@ -1,75 +1,124 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/village_game/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Portfolio</title>
-    <link rel="stylesheet" href="./style.css" />
-    <link rel="stylesheet" href="./ranker.css" />
-  </head>
-  <body>
-    <div id="app">
-      <header>
-        <h1>Scoitol Lab</h1>
-        <p class="subtitle">Exploring web technologies & game development</p>
-      </header>
-      
-      <div class="projects-grid">
-        <a href="./village_game/" class="project-card">
-          <h2 class="card-title">Village Defense</h2>
-          <p class="card-desc">A strategic tower defense game where you build, gather, and defend your village against waves of enemies.</p>
-        </a>
-        
-        <div class="project-card" id="ranker-card">
-          <h2 class="card-title">Ranker</h2>
-          <p class="card-desc">A tool to help you sort and rank any list of items by comparing them pairwise.</p>
-        </div>
 
-        <div class="project-card coming-soon">
-          <h2 class="card-title">Coming Soon</h2>
-          <p class="card-desc">More works in progress...</p>
-        </div>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/village_game/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Portfolio</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./ranker.css" />
+  <link rel="stylesheet" href="./calculator.css" />
+</head>
+
+<body>
+  <div id="app">
+    <header>
+      <h1>Scoitol Lab</h1>
+      <p class="subtitle">Exploring web technologies & game development</p>
+    </header>
+
+    <div class="projects-grid">
+      <a href="./village_game/" class="project-card">
+        <h2 class="card-title">Village Defense</h2>
+        <p class="card-desc">A strategic tower defense game where you build, gather, and defend your village against
+          waves of enemies.</p>
+      </a>
+
+      <div class="project-card" id="ranker-card">
+        <h2 class="card-title">Ranker</h2>
+        <p class="card-desc">A tool to help you sort and rank any list of items by comparing them pairwise.</p>
       </div>
 
-      <footer>
-        <p>Scoitol Designs</p>
-      </footer>
-    </div>
+      <div class="project-card" id="calc-card">
+        <h2 class="card-title">Card Draw Calculator</h2>
+        <p class="card-desc">Calculate probability of drawing specific card combos from your deck.</p>
+      </div>
 
-    <!-- Ranker Modal -->
-    <div id="ranker-modal" class="modal hidden">
-      <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        
-        <div id="ranker-setup">
-          <h2>Ranker</h2>
-          <p>Enter your list of items (one per line):</p>
-          <textarea id="ranker-input" rows="10" placeholder="Item 1&#10;Item 2&#10;Item 3"></textarea>
-          <button id="start-ranking-btn">Start Ranking</button>
-        </div>
-
-        <div id="ranker-vote" class="hidden">
-          <h2>Which is better?</h2>
-          <p id="question-count">Question 1</p>
-          <div class="vote-buttons">
-            <button id="option-a" class="vote-btn">Option A</button>
-            <button id="option-b" class="vote-btn">Option B</button>
-          </div>
-          <div class="progress-container">
-            <div id="ranker-progress" class="progress-bar"></div>
-          </div>
-        </div>
-
-        <div id="ranker-result" class="hidden">
-          <h2>Your Ranking</h2>
-          <div id="ranking-list" class="markdown-preview"></div>
-          <button id="copy-ranking-btn">Copy to Clipboard</button>
-          <button id="reset-ranking-btn">Rank New List</button>
-        </div>
+      <div class="project-card coming-soon">
+        <h2 class="card-title">Coming Soon</h2>
+        <p class="card-desc">More works in progress...</p>
       </div>
     </div>
 
-    <script type="module" src="./ranker.js"></script>
-  </body>
+    <footer>
+      <p>Scoitol Designs</p>
+    </footer>
+  </div>
+
+  <!-- Ranker Modal -->
+  <div id="ranker-modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+
+      <div id="ranker-setup">
+        <h2>Ranker</h2>
+        <p>Enter your list of items (one per line):</p>
+        <textarea id="ranker-input" rows="10" placeholder="Item 1&#10;Item 2&#10;Item 3"></textarea>
+        <button id="start-ranking-btn">Start Ranking</button>
+      </div>
+
+      <div id="ranker-vote" class="hidden">
+        <h2>Which is better?</h2>
+        <p id="question-count">Question 1</p>
+        <div class="vote-buttons">
+          <button id="option-a" class="vote-btn">Option A</button>
+          <button id="option-b" class="vote-btn">Option B</button>
+        </div>
+        <div class="progress-container">
+          <div id="ranker-progress" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <div id="ranker-result" class="hidden">
+        <h2>Your Ranking</h2>
+        <div id="ranking-list" class="markdown-preview"></div>
+        <button id="copy-ranking-btn">Copy to Clipboard</button>
+        <button id="reset-ranking-btn">Rank New List</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculator Modal -->
+  <div id="calculator-modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+
+      <div class="calc-header">
+        <h2>Draw Probability Calculator</h2>
+        <p>Configure your deck and desired outcomes below.</p>
+      </div>
+
+      <div class="base-settings">
+        <div class="input-group">
+          <label for="deck-size">Deck Size</label>
+          <input type="number" id="deck-size" value="40" min="1">
+        </div>
+        <div class="input-group">
+          <label for="hand-size">Hand Size</label>
+          <input type="number" id="hand-size" value="5" min="1">
+        </div>
+      </div>
+
+      <div id="outcomes-container">
+        <!-- Defined in JS -->
+      </div>
+
+      <div class="main-actions">
+        <button id="add-outcome-btn" class="secondary-btn">+ Add Desired Outcome (OR)</button>
+        <button id="calculate-btn" class="primary-btn">Calculate Probability</button>
+      </div>
+
+      <div id="calc-result-section">
+        <h2>Probability</h2>
+        <div id="calc-result-value" class="result-value">0.0%</div>
+        <p id="calc-result-detail" class="result-detail">Simulating...</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./ranker.js"></script>
+  <script type="module" src="./calculator.js"></script>
+</body>
+
 </html>
