@@ -241,40 +241,40 @@ export class Game {
             }
         }
 
-        if (entity.type === 'tree') {
+        if (entity.resourceType === 'tree') {
             this.player.inventory.wood += 5;
             this.player.addResourceDelta('wood', 5);
         }
-        if (entity.type === 'rock') {
+        if (entity.resourceType === 'rock') {
             this.player.inventory.stone += 5;
             this.player.addResourceDelta('stone', 5);
         }
         // New Resources
-        if (entity.type === 'iron') {
+        if (entity.resourceType === 'iron') {
             this.player.inventory.iron += 2;
             this.player.addResourceDelta('iron', 2);
         }
-        if (entity.type === 'crystal') {
+        if (entity.resourceType === 'crystal') {
             this.player.inventory.crystal += 2;
             this.player.addResourceDelta('crystal', 2);
         }
-        if (entity.type === 'obsidian') {
+        if (entity.resourceType === 'obsidian') {
             this.player.inventory.obsidian += 2;
             this.player.addResourceDelta('obsidian', 2);
         }
-        if (entity.type === 'diamond') {
+        if (entity.resourceType === 'diamond') {
             this.player.inventory.diamond += 1;
             this.player.addResourceDelta('diamond', 1);
         }
-        if (entity.type === 'emerald') {
+        if (entity.resourceType === 'emerald') {
             this.player.inventory.emerald += 1;
             this.player.addResourceDelta('emerald', 1);
         }
-        if (entity.type === 'ruby') {
+        if (entity.resourceType === 'ruby') {
             this.player.inventory.ruby += 1;
             this.player.addResourceDelta('ruby', 1);
         }
-        if (entity.type === 'sapphire') {
+        if (entity.resourceType === 'sapphire') {
             this.player.inventory.sapphire += 1;
             this.player.addResourceDelta('sapphire', 1);
         }
