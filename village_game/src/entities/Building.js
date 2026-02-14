@@ -35,12 +35,13 @@ export class Building extends Entity {
         }
 
         super(x, y, radius, color);
+        this.type = 'building';
         this.buildingType = type; // 'wood_gen', 'stone_gen', etc.
         this.productionTimer = Config.GENERATOR_PRODUCTION_TIME;
         this.maxProductionTimer = Config.GENERATOR_PRODUCTION_TIME;
         this.timer = this.productionTimer; // Initialize timer
         this.interval = this.productionTimer; // Default interval
-        
+
         // Stats tracking
         this.generatedCount = 0; // For generators
 
@@ -136,7 +137,7 @@ export class Building extends Entity {
                 this.worker.speed = 50; // Slow
             }
         } else if (this.buildingType === 'alchemy') {
-            const player = entities.find(e => e.constructor.name === 'Player');
+            const player = entities.find(e => e.type === 'player');
             if (player) {
                 player.inventory.gold += 1;
                 player.addResourceDelta('gold', 1);
@@ -171,7 +172,7 @@ export class Building extends Entity {
     checkBuffs(entities) {
         if (!this.buildingType.startsWith('buff_')) return;
 
-        const player = entities.find(e => e.constructor.name === 'Player');
+        const player = entities.find(e => e.type === 'player');
         if (!player) return;
 
         const dist = Math.hypot(player.x - this.x, player.y - this.y);

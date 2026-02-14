@@ -19,7 +19,7 @@ export class Tooltips {
         for (const entity of this.game.entities) {
             const dist = Math.hypot(worldX - entity.x, worldY - entity.y);
 
-            if (entity.constructor.name === 'Turret' && dist < entity.radius + 15) {
+            if (entity.type === 'turret' && dist < entity.radius + 15) {
                 // Draw turret stats in yellow
                 const dps = (entity.damage / entity.fireRate).toFixed(1);
                 const text = `${entity.turretType.toUpperCase()} | DMG: ${entity.damage} | Rate: ${entity.fireRate.toFixed(2)}s | DPS: ${dps} | Range: ${entity.range}`;

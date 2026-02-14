@@ -6,9 +6,9 @@ export class Enemy extends Entity {
         let radius = 15;
         let speed = 50;
         let healthMult = 1.0;
-        
+
         // Type configuration
-        switch(type) {
+        switch (type) {
             case 'fast': color = '#f1c40f'; speed = 100; radius = 10; healthMult = 0.6; break;
             case 'tank': color = '#2c3e50'; speed = 25; radius = 25; healthMult = 3.0; break;
             case 'disruptor': color = '#e67e22'; break;
@@ -35,20 +35,20 @@ export class Enemy extends Entity {
         this.target = target;
         this.baseSpeed = speed;
         this.speed = speed;
-        
+
         // Power-based stats
         this.power = power;
         this.maxHealth = this.calculateHealth(power) * healthMult;
         this.health = this.maxHealth;
         this.damage = this.calculateDamage(power);
         this.attackCooldown = 0;
-        
+
         // Behavior State
         this.stateTimer = 0;
         this.state = 0; // For stopgo, teleport, etc.
         this.initialAngle = Math.atan2(y - target.y, x - target.x);
         this.orbitAngle = this.initialAngle;
-        
+
         // Status Effects
         this.effects = {
             frozen: { duration: 0, amount: 0 },
@@ -83,8 +83,8 @@ export class Enemy extends Entity {
             // Splitter logic
             if (this.enemyType === 'splitter' && this.radius > 10) {
                 // Spawn 2 smaller enemies
-                for(let i=0; i<2; i++) {
-                    const child = new Enemy(this.x + (Math.random()-0.5)*20, this.y + (Math.random()-0.5)*20, 'fast', this.target, this.power * 0.4);
+                for (let i = 0; i < 2; i++) {
+                    const child = new Enemy(this.x + (Math.random() - 0.5) * 20, this.y + (Math.random() - 0.5) * 20, 'fast', this.target, this.power * 0.4);
                     child.radius = 10;
                     game.addEntity(child);
                 }
@@ -106,7 +106,7 @@ export class Enemy extends Entity {
             this.effects.poisoned.duration -= dt;
             this.takeDamage(this.effects.poisoned.dps * dt);
         }
-        
+
         // Regenerator logic
         if (this.enemyType === 'regenerator') {
             this.health = Math.min(this.maxHealth, this.health + (this.maxHealth * 0.05 * dt));
@@ -122,7 +122,7 @@ export class Enemy extends Entity {
             let minDist = Infinity;
             const potentialTargets = (game && game.turrets) ? game.turrets : entities;
             for (const entity of potentialTargets) {
-                if (entity.constructor.name === 'Turret') {
+                if (entity.type === 'turret') {
                     const dist = Math.hypot(entity.x - this.x, entity.y - this.y);
                     if (dist < minDist) {
                         minDist = dist;
@@ -139,7 +139,7 @@ export class Enemy extends Entity {
         const dx = target.x - this.x;
         const dy = target.y - this.y;
         const dist = Math.hypot(dx, dy);
-        
+
         let moveX = 0;
         let moveY = 0;
 
@@ -168,7 +168,7 @@ export class Enemy extends Entity {
                 this.y += Math.sin(angle) * 100;
                 this.stateTimer = 0;
                 // Flash effect
-                if (game && game.particleSystem) game.particleSystem.emit(this.x, this.y, this.color, 10, {speed: 100, life: 0.5});
+                if (game && game.particleSystem) game.particleSystem.emit(this.x, this.y, this.color, 10, { speed: 100, life: 0.5 });
             }
             currentSpeed = 0; // Don't move normally
         } else if (this.enemyType === 'spiral') {
@@ -196,10 +196,10 @@ export class Enemy extends Entity {
                 moveY = ody / odist;
             }
         } else if (this.enemyType === 'glitch') {
-             if (Math.random() > 0.9) {
-                 this.x += (Math.random() - 0.5) * 50;
-                 this.y += (Math.random() - 0.5) * 50;
-             }
+            if (Math.random() > 0.9) {
+                this.x += (Math.random() - 0.5) * 50;
+                this.y += (Math.random() - 0.5) * 50;
+            }
         }
 
         // Default direct movement if no special move vector set
@@ -209,7 +209,7 @@ export class Enemy extends Entity {
                 moveY = dy / dist;
             }
         }
-        
+
         // Apply movement
         if (dist > target.radius + this.radius) {
             this.x += moveX * currentSpeed * dt;
@@ -226,7 +226,7 @@ export class Enemy extends Entity {
     }
 
     attack(target) {
-        if (this.enemyType === 'disruptor' && target.constructor.name === 'Turret') {
+        if (this.enemyType === 'disruptor' && target.type === 'turret') {
             target.paralyzedTime = 5.0;
             this.markedForDeletion = true;
         } else if (this.enemyType === 'kamikaze') {
@@ -261,10 +261,10 @@ export class Enemy extends Entity {
 
     draw(ctx) {
         ctx.save();
-        
+
         // Translate to position
         ctx.translate(this.x, this.y);
-        
+
         // Rotate to face target/movement
         if (this.target) {
             const angle = Math.atan2(this.target.y - this.y, this.target.x - this.x);
@@ -286,10 +286,10 @@ export class Enemy extends Entity {
             ctx.fillStyle = 'rgba(52, 152, 219, 0.5)';
             ctx.beginPath(); ctx.arc(0, 0, this.radius + 5, 0, Math.PI * 2); ctx.fill();
         }
-        
+
         // Glitch effect
         if (this.enemyType === 'glitch') {
-            ctx.translate((Math.random()-0.5)*5, (Math.random()-0.5)*5);
+            ctx.translate((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 5);
         }
 
         // Tier Visuals (Aura for high tiers)
@@ -299,19 +299,19 @@ export class Enemy extends Entity {
         }
 
         ctx.fillStyle = this.color;
-        
+
         // --- Dynamic Shape Generation based on Tier ---
         // Tier 0 = Triangle (3 sides)
         // Tier 1 = Square (4 sides)
         // Tier 2 = Pentagon (5 sides)
         // ...
         // Tier 5+ = Spiky
-        
+
         ctx.beginPath();
-        
+
         // Special shapes for specific types override the tier shape
         if (this.enemyType === 'spiral' || this.enemyType === 'orbital') {
-             // Shuriken / Star shape
+            // Shuriken / Star shape
             const spikes = 4;
             const outerRadius = this.radius;
             const innerRadius = this.radius / 2;
@@ -321,14 +321,14 @@ export class Enemy extends Entity {
                 ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
             }
         } else if (this.enemyType === 'stealth') {
-             ctx.setLineDash([5, 5]);
-             ctx.strokeStyle = 'white';
-             ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-             ctx.stroke();
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = 'white';
+            ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+            ctx.stroke();
         } else {
             // Default Evolution Logic
             const sides = 3 + Math.min(tier, 5); // Cap at 8 sides (octagon)
-            
+
             if (tier >= 5 || this.enemyType === 'boss') {
                 // Spiky Shape for high tiers
                 const spikes = sides + 2;
@@ -349,27 +349,27 @@ export class Enemy extends Entity {
         }
         ctx.closePath();
         ctx.fill();
-        
+
         // Eyes (Points)
         ctx.fillStyle = 'white';
         // Adjust eye position based on shape? 
         // Standard eyes at top-ish
         const eyeY = -this.radius * 0.3;
         const eyeX = this.radius * 0.3;
-        
+
         // Left Eye
         ctx.beginPath(); ctx.arc(-eyeX, eyeY, this.radius * 0.2, 0, Math.PI * 2); ctx.fill();
         // Right Eye
         ctx.beginPath(); ctx.arc(eyeX, eyeY, this.radius * 0.2, 0, Math.PI * 2); ctx.fill();
-        
+
         // Pupils
         // Red pupils for high tier
         ctx.fillStyle = tier >= 3 ? '#e74c3c' : 'black';
         if (tier >= 6) ctx.fillStyle = '#ff0000'; // Glowing red for very high tier
-        
+
         ctx.beginPath(); ctx.arc(-eyeX, eyeY, this.radius * 0.1, 0, Math.PI * 2); ctx.fill();
         ctx.beginPath(); ctx.arc(eyeX, eyeY, this.radius * 0.1, 0, Math.PI * 2); ctx.fill();
-        
+
         // Angry Eyebrows for high tier
         if (tier >= 2) {
             ctx.strokeStyle = 'black';
@@ -383,7 +383,7 @@ export class Enemy extends Entity {
             ctx.lineTo(eyeX - 2, eyeY - 2);
             ctx.stroke();
         }
-        
+
         ctx.restore();
     }
 }

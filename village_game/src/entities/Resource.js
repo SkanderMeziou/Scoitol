@@ -14,7 +14,8 @@ export class Resource extends Entity {
         if (type === 'sapphire') color = '#2980b9'; // Dark Blue
 
         super(x, y, 15, color);
-        this.type = type;
+        this.type = 'resource';
+        this.resourceType = type;
         this.maxHealth = 5;
         this.health = this.maxHealth;
         this.flashTime = 0;
@@ -37,7 +38,7 @@ export class Resource extends Entity {
         const brightness = 0.4 + (0.6 * healthPct);
 
         ctx.save();
-        
+
         // Flash white when hit
         if (this.flashTime > 0) {
             ctx.filter = 'brightness(200%)';
@@ -46,16 +47,16 @@ export class Resource extends Entity {
             ctx.filter = `brightness(${brightness * 100}%)`;
         }
 
-        const scale = this.type === 'tree' ? (Config.TREE_SIZE_MULTIPLIER || 1.0) : (Config.RESOURCE_SIZE_MULTIPLIER || 1.0);
+        const scale = this.resourceType === 'tree' ? (Config.TREE_SIZE_MULTIPLIER || 1.0) : (Config.RESOURCE_SIZE_MULTIPLIER || 1.0);
         ctx.translate(this.x, this.y);
         ctx.scale(scale, scale);
         ctx.translate(-this.x, -this.y);
 
-        if (this.type === 'tree') {
+        if (this.resourceType === 'tree') {
             // Trunk
             ctx.fillStyle = '#a07464ff'; // Brown
             ctx.fillRect(this.x - 5, this.y, 10, 15);
-            
+
             // Foliage (3 circles)
             ctx.fillStyle = '#83cf50ff';
             ctx.beginPath();
@@ -63,7 +64,7 @@ export class Resource extends Entity {
             ctx.arc(this.x - 10, this.y, 12, 0, Math.PI * 2);
             ctx.arc(this.x + 10, this.y, 12, 0, Math.PI * 2);
             ctx.fill();
-        } else if (this.type === 'rock') {
+        } else if (this.resourceType === 'rock') {
             ctx.fillStyle = '#95a5a6';
             ctx.beginPath();
             // Irregular shape
@@ -75,7 +76,7 @@ export class Resource extends Entity {
             ctx.lineTo(this.x + 5, this.y + 15);
             ctx.fill();
             ctx.closePath();
-            
+
             // Highlight
             ctx.fillStyle = '#bdc3c7';
             ctx.beginPath();
@@ -92,7 +93,7 @@ export class Resource extends Entity {
             ctx.lineTo(this.x - 15, this.y);
             ctx.fill();
             ctx.closePath();
-            
+
             // Shine
             ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
             ctx.beginPath();
@@ -103,7 +104,7 @@ export class Resource extends Entity {
             ctx.fill();
             ctx.closePath();
         }
-        
+
         ctx.restore();
     }
 }

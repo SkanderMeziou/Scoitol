@@ -8,6 +8,7 @@ import { Recipes } from '../game/Recipes.js';
 export class Player extends Entity {
     constructor(x, y, input) {
         super(x, y, 15, '#ffffffff'); // Yellow player
+        this.type = 'player';
         this.input = input;
         this.speed = Config.PLAYER_SPEED;
         this.inventory = {
@@ -178,7 +179,7 @@ export class Player extends Entity {
 
         // Collision Check (Strict Grid Occupancy)
         for (const entity of entities) {
-            if (entity.constructor.name === 'Turret' || entity.constructor.name === 'Building' || entity.constructor.name === 'House') {
+            if (entity.type === 'turret' || entity.type === 'building' || entity.type === 'house') {
                 // Check if grid cell is occupied
                 // Simple distance check is often enough if radius ~ grid/2
                 const dist = Math.hypot(entity.x - gridX, entity.y - gridY);

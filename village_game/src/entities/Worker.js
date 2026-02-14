@@ -31,13 +31,13 @@ export class Worker extends Entity {
             if (dist < 20) {
                 // Harvest
                 if (this.target.takeDamage) this.target.takeDamage(10); // Fast harvest
-                
+
                 // Track by type if universal collector
                 if (this.resourceType === 'all') {
                     const resType = this.target.type;
                     this.inventoryByType[resType] = (this.inventoryByType[resType] || 0) + 1;
                 }
-                
+
                 this.inventory++;
                 this.state = 'IDLE'; // Look for next or return
             } else {
@@ -52,7 +52,7 @@ export class Worker extends Entity {
                 // But Worker needs access to Player. 
                 // Let's assume the Game loop handles "Worker deposited" or we pass Player to update?
                 // For simplicity, let's find Player in entities.
-                const player = entities.find(e => e.constructor.name === 'Player');
+                const player = entities.find(e => e.type === 'player');
                 if (player) {
                     if (this.resourceType === 'all') {
                         // Deposit all collected resources
@@ -117,10 +117,10 @@ export class Worker extends Entity {
 
         for (const entity of entities) {
             // For 'all' type, collect any resource. Otherwise, only collect matching type
-            const isMatch = this.resourceType === 'all' 
-                ? entity.constructor.name === 'Resource'
-                : (entity.constructor.name === 'Resource' && entity.type === this.resourceType);
-                
+            const isMatch = this.resourceType === 'all'
+                ? entity.type === 'resource'
+                : (entity.type === 'resource' && entity.resourceType === this.resourceType);
+
             if (isMatch) {
                 const distToPost = Math.hypot(entity.x - this.post.x, entity.y - this.post.y);
                 if (distToPost < minDist) {

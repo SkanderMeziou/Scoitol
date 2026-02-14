@@ -42,7 +42,7 @@ export class Game {
         this.currentZoomScale = 1.0;
 
         this.entities = [this.house, this.player];
-        
+
         // Optimization: Separate lists for faster logic lookups
         this.enemies = [];
         this.turrets = [];
@@ -71,7 +71,7 @@ export class Game {
 
         // Resource spawning
         this.resourceSpawnTimer = Config.RESOURCE_SPAWN_TIMER;
-        
+
         // World Boundaries
         this.worldSize = Config.WORLD_SIZE;
         this.canvas.width = window.innerWidth;
@@ -173,7 +173,7 @@ export class Game {
         // Update Entities
         this.entities.forEach(entity => {
             // Pass specific lists if needed to avoid full iteration
-            const newEntity = entity.update(dt, this.entities, this); 
+            const newEntity = entity.update(dt, this.entities, this);
             if (newEntity) {
                 this.addEntity(newEntity);
             }
@@ -191,9 +191,9 @@ export class Game {
         });
 
         // Sync optimization lists
-        this.enemies = this.entities.filter(e => e.constructor.name === 'Enemy');
-        this.turrets = this.entities.filter(e => e.constructor.name === 'Turret');
-        this.resources = this.entities.filter(e => e.constructor.name === 'Resource');
+        this.enemies = this.entities.filter(e => e.type === 'enemy');
+        this.turrets = this.entities.filter(e => e.type === 'turret');
+        this.resources = this.entities.filter(e => e.type === 'resource');
 
         // Sort entities by Y for simple depth sorting
         // Optimization: Only sort if necessary? No, depth is dynamic.
@@ -202,42 +202,43 @@ export class Game {
         this.entities.sort((a, b) => a.y - b.y);
 
         this.hud.update();
-        
+
         // Handle scroll for build menu
         const wheelDelta = this.input.consumeWheel();
         if (wheelDelta !== 0) {
             this.buildMenu.handleScroll(wheelDelta);
         }
-        
+
         this.buildMenu.update(dt);
         this.encyclopedia.update();
     }
 
     addEntity(entity) {
         this.entities.push(entity);
-        if (entity.constructor.name === 'Enemy') this.enemies.push(entity);
-        if (entity.constructor.name === 'Turret') this.turrets.push(entity);
-        if (entity.constructor.name === 'Resource') this.resources.push(entity);
+        if (entity.enemyType) this.enemies.push(entity); // Enemy has enemyType
+        if (entity.type === 'turret') this.turrets.push(entity);
+        if (entity.type === 'resource') this.resources.push(entity);
+        if (entity.type === 'building') this.buildings.push(entity);
     }
 
     handleEntityDeath(entity) {
         // Particle Effects
-        if (entity.constructor.name === 'Resource' || entity.type === 'tree' || entity.type === 'rock') {
-             this.particleSystem.emit(entity.x, entity.y, entity.color || '#8e44ad', 8, { speed: 100, life: 0.5 });
+        if (entity.type === 'resource') {
+            this.particleSystem.emit(entity.x, entity.y, entity.color || '#8e44ad', 8, { speed: 100, life: 0.5 });
         }
-        if (entity.constructor.name === 'Enemy') {
-             this.particleSystem.emit(entity.x, entity.y, '#c0392b', 10, { speed: 150, life: 0.8 });
-             
-             // Money Turret Reward
-             if (entity.lastHitSource && entity.lastHitSource.turretType === 'money') {
-                 const reward = Math.random() > 0.5 ? 'iron' : 'gold'; // We don't have gold, let's use iron/crystal
-                 // Actually let's give random resources
-                 const types = ['wood', 'stone', 'iron', 'crystal'];
-                 const type = types[Math.floor(Math.random() * types.length)];
-                 const amount = 5;
-                 this.player.inventory[type] = (this.player.inventory[type] || 0) + amount;
-                 this.player.addResourceDelta(type, amount);
-             }
+        if (entity.type === 'enemy') {
+            this.particleSystem.emit(entity.x, entity.y, '#c0392b', 10, { speed: 150, life: 0.8 });
+
+            // Money Turret Reward
+            if (entity.lastHitSource && entity.lastHitSource.turretType === 'money') {
+                const reward = Math.random() > 0.5 ? 'iron' : 'gold'; // We don't have gold, let's use iron/crystal
+                // Actually let's give random resources
+                const types = ['wood', 'stone', 'iron', 'crystal'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                const amount = 5;
+                this.player.inventory[type] = (this.player.inventory[type] || 0) + amount;
+                this.player.addResourceDelta(type, amount);
+            }
         }
 
         if (entity.type === 'tree') {
@@ -300,7 +301,7 @@ export class Game {
         // Let's say the round type is determined at the start of the wave.
         // But here we are just spawning one enemy.
         // We should store currentRoundType on the Game instance.
-        
+
         if (!this.currentRoundType || this.currentRoundWave !== this.wave) {
             this.currentRoundWave = this.wave;
             // Pick a round type based on weights
@@ -331,21 +332,21 @@ export class Game {
                 break;
             }
         }
-        
+
         // Calculate base power for this wave
         let basePower = Config.ENEMY_BASE_POWER * Math.pow(Config.ENEMY_POWER_SCALING, this.wave - 1);
-        
+
         // Apply Round Multipliers
         if (round.powerMultiplier) basePower *= round.powerMultiplier;
-        
+
         // Apply power variance formula: f(t) = (k/n) + (kn - (k/n)) * t^k
         // where t ∈ [0,1], k = variance factor, n = base power
         const t = Math.random(); // Random value between 0 and 1
         const k = Config.ENEMY_POWER_VARIANCE;
         const n = basePower;
-        
+
         const power = (n / k) + (k * n - (n / k)) * Math.pow(t, k);
-        
+
         const enemy = new Enemy(x, y, type, this.house, power);
 
         this.addEntity(enemy);
@@ -355,17 +356,17 @@ export class Game {
         console.log("Spawning Visual Showcase");
         const startX = this.player.x - 300;
         const startY = this.player.y + 200;
-        
+
         for (let i = 0; i < 10; i++) {
             // Calculate power for this tier: 4^i
             const power = Math.pow(4, i);
             const x = startX + i * 60;
             const y = startY;
-            
+
             const enemy = new Enemy(x, y, 'normal', this.house, power);
             // Disable AI for showcase
-            enemy.speed = 0; 
-            enemy.update = function() {}; // Freeze update
+            enemy.speed = 0;
+            enemy.update = function () { }; // Freeze update
             this.addEntity(enemy);
         }
     }
@@ -435,7 +436,7 @@ export class Game {
 
         // Dynamic Zoom Logic
         // Count buildings (Turrets + Buildings)
-        const buildingCount = this.turrets.length + this.entities.filter(e => e.constructor.name === 'Building').length;
+        const buildingCount = this.turrets.length + this.entities.filter(e => e.type === 'building').length;
 
         // Base scale 1.0
         // At 20 buildings, start zooming out.
@@ -496,7 +497,7 @@ export class Game {
 
         // Draw particles in world space
         this.particleSystem.draw(this.ctx);
-        
+
         this.ctx.restore(); // Restore for UI overlay
 
         // Draw UI elements (Screen Space)
@@ -531,11 +532,11 @@ export class Game {
         let hoveredEntity = null;
 
         for (const entity of this.entities) {
-             // Culling for tooltip check too!
-             if (entity.x + entity.radius < viewLeft || entity.x - entity.radius > viewRight ||
-                 entity.y + entity.radius < viewTop || entity.y - entity.radius > viewBottom) {
-                 continue;
-             }
+            // Culling for tooltip check too!
+            if (entity.x + entity.radius < viewLeft || entity.x - entity.radius > viewRight ||
+                entity.y + entity.radius < viewTop || entity.y - entity.radius > viewBottom) {
+                continue;
+            }
 
             // Project entity to screen space
             // World -> Screen: (World - Center) * Scale + Center
@@ -551,7 +552,7 @@ export class Game {
         }
 
         if (hoveredEntity) {
-            let name = hoveredEntity.constructor.name;
+            let name = hoveredEntity.type.toUpperCase();
             let stats = [];
 
             if (name === 'Turret') {
@@ -569,7 +570,7 @@ export class Game {
                 name = hoveredEntity.enemyType.charAt(0).toUpperCase() + hoveredEntity.enemyType.slice(1);
                 stats.push(`HP: ${Math.round(hoveredEntity.health)}/${Math.round(hoveredEntity.maxHealth)}`);
                 stats.push(`Speed: ${Math.round(hoveredEntity.speed)}`);
-                
+
                 if (hoveredEntity.effects) {
                     if (hoveredEntity.effects.frozen.duration > 0) stats.push(`Frozen (${hoveredEntity.effects.frozen.duration.toFixed(1)}s)`);
                     if (hoveredEntity.effects.burning.duration > 0) stats.push(`Burning (${hoveredEntity.effects.burning.duration.toFixed(1)}s)`);
@@ -583,7 +584,7 @@ export class Game {
             this.ctx.font = '14px Arial';
             const nameWidth = this.ctx.measureText(name).width;
             let boxWidth = nameWidth + padding * 2;
-            
+
             // Calculate width based on stats
             stats.forEach(stat => {
                 const w = this.ctx.measureText(stat).width;
@@ -604,7 +605,7 @@ export class Game {
             this.ctx.textAlign = 'left';
             this.ctx.textBaseline = 'top';
             this.ctx.fillText(name, boxX + padding, boxY + padding);
-            
+
             // Draw stats
             stats.forEach((stat, index) => {
                 this.ctx.fillText(stat, boxX + padding, boxY + padding + 20 + (index * lineHeight));
@@ -621,7 +622,7 @@ export class Game {
         const scale = this.currentZoomScale || 1.0;
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
-        
+
         const viewLeft = centerX - (centerX / scale);
         const viewTop = centerY - (centerY / scale);
         const viewRight = centerX + ((this.canvas.width - centerX) / scale);
