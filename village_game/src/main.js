@@ -1,4 +1,3 @@
-import './style.css'
 import { Game } from './game/Game.js'
 
 document.querySelector('#app').innerHTML = ''
