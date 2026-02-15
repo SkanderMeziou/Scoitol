@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMM: Master Money Maker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div id="game-container">
+        <header>
+            <div class="header-stat">
+                <span class="label">MONEY</span>
+                <span class="value" id="money-display">100,000</span>
+            </div>
+            <div class="header-stat rent-stat">
+                <span class="label">RENT (Due Next Turn)</span>
+                <span class="value" id="rent-display">1,000</span>
+            </div>
+            <div class="header-stat">
+                <span class="label">TURN</span>
+                <span class="value" id="turn-display">1</span>
+            </div>
+            <button id="next-turn-btn">NEXT TURN</button>
+        </header>
+
+        <main>
+            <section id="inventory-section">
+                <h2>Your Portfolio</h2>
+                <div class="inventory-header">
+                    <span>Item</span>
+                    <span>Value</span>
+                    <span>Reputation</span>
+                    <span>Trend</span>
+                    <span>Actions</span>
+                </div>
+                <div id="inventory-list">
+                </div>
+                <div class="portfolio-chart-container">
+                    <h3>Portfolio Value Over Time</h3>
+                    <canvas id="portfolio-chart" width="600" height="200"></canvas>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-color cash"></span> Cash</span>
+                        <span class="legend-item"><span class="legend-color assets"></span> Assets</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="market-section">
+                <h2>Market</h2>
+                <div id="market-list">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="game-over-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">Game Over</h2>
+            <p id="modal-message">You ran out of money to pay rent.</p>
+            <button id="restart-btn">Restart Game</button>
+        </div>
+    </div>
+
+    <script type="module" src="./src/game.js"></script>
+</body>
+
+</html>
