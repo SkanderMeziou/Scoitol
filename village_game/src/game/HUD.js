@@ -57,7 +57,7 @@ export class HUD {
       <div style="font-size: 18px; color: #e74c3c; margin-bottom: 10px;">
         <strong>Wave ${this.player.game.wave}</strong> (${Math.ceil(this.player.game.waveTimer)}s)
       </div>
-      ${this.notification ? `<div style="background: rgba(0,0,0,0.7); color: #f1c40f; padding: 5px; margin-bottom: 10px; border-radius: 4px;">${this.notification}</div>` : ''}
+      ${this.notification ? `<div style="background: rgba(0,0,0,0.7); color: #f1c40f; padding: 5px; margin-bottom: 10px; border-radius: 6px; corner-shape: squircle;">${this.notification}</div>` : ''}
       <div><strong>Inventory</strong></div>
       ${formatResource('Wood', this.player.inventory.wood)}<br>
       ${formatResource('Stone', this.player.inventory.stone)}<br>

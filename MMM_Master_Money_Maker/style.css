@@ -40,7 +40,7 @@ header {
     background: rgba(26, 26, 26, 0.8);
     backdrop-filter: blur(10px);
     padding: 25px;
-    border-radius: 16px;
+    border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 230, 118, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -77,7 +77,7 @@ header {
     color: #000;
     border: none;
     padding: 12px 30px;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
@@ -102,7 +102,7 @@ section {
     background: rgba(26, 26, 26, 0.6);
     backdrop-filter: blur(10px);
     padding: 25px;
-    border-radius: 16px;
+    border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -153,7 +153,7 @@ h2 {
     background: var(--accent-color);
     color: #000;
     padding: 2px 8px;
-    border-radius: 12px;
+    border-radius: 14px;
     font-size: 0.75rem;
     font-weight: 700;
 }
@@ -179,7 +179,7 @@ h2 {
     color: white;
     border: none;
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 0.85rem;
     font-weight: 600;
@@ -196,7 +196,7 @@ h2 {
     margin-top: 20px;
     padding: 15px;
     background: rgba(0, 230, 118, 0.1);
-    border-radius: 8px;
+    border-radius: 10px;
     text-align: center;
     font-size: 1.1rem;
     font-weight: 600;
@@ -215,7 +215,7 @@ h2 {
     background: rgba(61, 61, 61, 0.4);
     backdrop-filter: blur(5px);
     padding: 20px;
-    border-radius: 12px;
+    border-radius: 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -241,7 +241,7 @@ h2 {
     margin: 10px 0;
     padding: 10px;
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
+    border-radius: 10px;
 }
 
 .market-stats {
@@ -268,7 +268,7 @@ h2 {
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-color);
     padding: 8px 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     width: 70px;
     font-size: 1rem;
     font-weight: 600;
@@ -284,7 +284,7 @@ h2 {
     color: #000;
     border: none;
     padding: 10px 20px;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
     font-weight: 700;
     flex: 1;
@@ -306,7 +306,7 @@ h2 {
     flex: 1;
     transition: all 0.2s;
     margin: 5px;
-    border-radius: 30px;
+    border-radius: 36px;
 }
 
 .pct-btn:hover {
@@ -336,7 +336,7 @@ h2 {
 .modal-content {
     background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
     padding: 50px;
-    border-radius: 20px;
+    border-radius: 24px;
     text-align: center;
     max-width: 450px;
     border: 2px solid rgba(255, 82, 82, 0.3);
@@ -348,7 +348,7 @@ h2 {
     color: #000;
     border: none;
     padding: 12px 30px;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
@@ -381,7 +381,7 @@ h2 {
     margin-top: 30px;
     padding: 20px;
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid rgba(0, 230, 118, 0.2);
 }
 
@@ -433,8 +433,54 @@ h2 {
     font-size: 0.9rem;
     font-weight: 600;
     padding: 5px 10px;
-    border-radius: 10px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.05);
+}
+
+@supports (corner-shape: squircle) {
+    header,
+    section,
+    .modal-content {
+        border-radius: 40px;
+        corner-shape: squircle;
+    }
+
+    .market-item,
+    .portfolio-chart-container,
+    .total-value {
+        border-radius: 28px;
+        corner-shape: squircle;
+    }
+
+    #next-turn-btn,
+    #restart-btn,
+    .buy-btn {
+        border-radius: 18px;
+        corner-shape: squircle;
+    }
+
+    .qty-input,
+    .sell-btn,
+    .sell-all-btn,
+    .market-forecast,
+    .cost-preview {
+        border-radius: 16px;
+        corner-shape: squircle;
+    }
+
+    .quantity-badge {
+        border-radius: 24px;
+        corner-shape: squircle;
+    }
+
+    .pct-btn {
+        border-radius: 56px;
+        corner-shape: squircle;
+    }
+
+    .legend-color {
+        corner-shape: squircle;
+    }
 }
 
 

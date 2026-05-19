@@ -12,7 +12,8 @@ export class Encyclopedia {
         this.container.style.height = '80%';
         this.container.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
         this.container.style.border = '2px solid #f1c40f';
-        this.container.style.borderRadius = '10px';
+        this.container.style.borderRadius = '12px';
+        this.container.style.cornerShape = 'squircle';
         this.container.style.display = 'none';
         this.container.style.zIndex = '200';
         this.container.style.padding = '20px';
@@ -71,7 +72,7 @@ export class Encyclopedia {
             }
 
             html += `
-            <div style="border: 1px solid #555; padding: 10px; border-radius: 5px;">
+            <div style="border: 1px solid #555; padding: 10px; border-radius: 8px; corner-shape: squircle;">
                 <strong style="color: #f1c40f;">${opt.name}</strong><br>
                 <small>${opt.type} - ${opt.subType}</small><br>
                 <div style="margin-top: 5px; color: #ccc;">Cost: ${costStr.join(', ')}</div>

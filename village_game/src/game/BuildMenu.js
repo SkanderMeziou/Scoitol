@@ -71,7 +71,8 @@ export class BuildMenu {
             card.className = 'build-card';
             card.dataset.id = opt.id; // Store ID for updates
             card.style.border = '1px solid #555';
-            card.style.borderRadius = '5px';
+            card.style.borderRadius = '8px';
+            card.style.cornerShape = 'squircle';
             card.style.padding = '8px';
             card.style.cursor = 'pointer';
             card.style.color = 'white';
