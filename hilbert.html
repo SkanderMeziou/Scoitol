@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hilbert Timeflow</title>
+  <link rel="stylesheet" href="./hilbert.css" />
+</head>
+
+<body class="hilbert-page">
+  <main class="hilbert-layout">
+    <aside class="hilbert-sidebar hilbert-sidebar-left">
+      <a class="hilbert-back" href="./index.html">Back</a>
+
+      <section class="hilbert-panel">
+        <label class="hilbert-field">
+          <span>Title</span>
+          <input id="hilbert-title" type="text" value="Hilbert Timeflow" maxlength="48">
+        </label>
+
+        <label class="hilbert-field">
+          <span>Arrival label</span>
+          <input id="hilbert-bubble-label" type="text" value="Checkpoint" maxlength="32">
+        </label>
+      </section>
+
+      <section class="hilbert-panel">
+        <div class="hilbert-field">
+          <span>Preset</span>
+          <div class="segmented" id="hilbert-preset-group">
+            <button type="button" class="segmented-btn active" data-preset="current-hour">Current Hour</button>
+            <button type="button" class="segmented-btn" data-preset="current-day">Current Day</button>
+            <button type="button" class="segmented-btn" data-preset="current-month">Current Month</button>
+            <button type="button" class="segmented-btn" data-preset="current-year">Current Year</button>
+            <button type="button" class="segmented-btn" data-preset="chronometer">Chronometer</button>
+            <button type="button" class="segmented-btn" data-preset="custom">Custom</button>
+          </div>
+        </div>
+
+        <div class="hilbert-field-grid">
+          <label class="hilbert-field">
+            <span>Start</span>
+            <input id="hilbert-start-date" type="datetime-local">
+          </label>
+
+          <label class="hilbert-field">
+            <span>End</span>
+            <input id="hilbert-end-date" type="datetime-local">
+          </label>
+        </div>
+
+        <label class="hilbert-field" id="hilbert-duration-field">
+          <span>Chronometer duration (minutes)</span>
+          <input id="hilbert-duration-minutes" type="number" min="1" value="60">
+        </label>
+
+        <button id="hilbert-chrono-start" type="button" class="hilbert-primary-btn hilbert-chrono-start">
+          Start
+        </button>
+      </section>
+
+      <section class="hilbert-panel">
+        <div class="hilbert-panel-head">
+          <h2>Yellow trail</h2>
+          <label class="toggle">
+            <input id="hilbert-highlight-enabled" type="checkbox" checked>
+            <span class="toggle-ui"></span>
+          </label>
+        </div>
+
+        <div class="hilbert-field-grid">
+          <label class="hilbert-field">
+            <span>Amount</span>
+            <input id="hilbert-highlight-amount" type="number" min="1" value="24">
+          </label>
+
+          <label class="hilbert-field">
+            <span>Unit</span>
+            <select id="hilbert-highlight-unit">
+              <option value="minutes">Minutes</option>
+              <option value="hours" selected>Hours</option>
+              <option value="days">Days</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="hilbert-field">
+          <span>Fractal order</span>
+          <input id="hilbert-order" type="range" min="1" max="7" step="1" value="6">
+          <strong id="hilbert-order-value">6</strong>
+        </label>
+      </section>
+
+    </aside>
+
+    <section class="hilbert-stage">
+      <div class="hilbert-canvas-frame">
+        <canvas id="hilbert-canvas" width="1200" height="1200"></canvas>
+      </div>
+    </section>
+
+    <aside class="hilbert-sidebar hilbert-sidebar-right">
+      <section class="hilbert-panel">
+        <div class="hilbert-panel-head">
+          <h2>Code</h2>
+          <button id="hilbert-generate-code" type="button" class="hilbert-secondary-btn">Refresh</button>
+        </div>
+
+        <label class="hilbert-field">
+          <span>Save / load</span>
+          <textarea id="hilbert-code" rows="9" spellcheck="false"></textarea>
+        </label>
+
+        <div class="hilbert-actions">
+          <button id="hilbert-copy-code" type="button" class="hilbert-secondary-btn">Copy</button>
+          <button id="hilbert-load-code" type="button" class="hilbert-primary-btn">Load</button>
+        </div>
+      </section>
+
+      <section class="hilbert-panel">
+        <div class="hilbert-panel-head">
+          <h2>Snapshot</h2>
+        </div>
+        <dl class="hilbert-stats">
+          <div>
+            <dt>Progress</dt>
+            <dd id="hilbert-stat-progress">0%</dd>
+          </div>
+          <div>
+            <dt>Remaining</dt>
+            <dd id="hilbert-stat-remaining">0m</dd>
+          </div>
+          <div>
+            <dt>Preset</dt>
+            <dd id="hilbert-stat-preset">Current Hour</dd>
+          </div>
+          <div>
+            <dt>Highlight</dt>
+            <dd id="hilbert-stat-highlight">24 hours</dd>
+          </div>
+        </dl>
+      </section>
+    </aside>
+  </main>
+
+  <script type="module" src="./hilbert.js"></script>
+</body>
+
+</html>
