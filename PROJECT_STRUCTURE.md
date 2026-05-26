@@ -13,8 +13,7 @@ Le projet est divisé en deux parties principales :
 / (Racine du projet)
 ├── index.html              # Page d'accueil du Portfolio
 ├── style.css               # Styles graphiques du Portfolio (Design Premium)
-├── vite.config.js          # Configuration pour compiler le site ET le jeu
-├── package.json            # Dépendances (Vite, etc.)
+├── .github/workflows/      # Deploiement statique GitHub Pages
 │
 ├── village_game/           # Dossier contenant TOUT le jeu
 │   ├── index.html          # Point d'entrée du jeu
@@ -39,7 +38,7 @@ C'est la vitrine.
 
 - **`index.html`** : Contient le code HTML de votre portfolio. C'est ici que vous ajoutez de nouvelles "cartes" pour vos futurs projets.
 - **`style.css`** : Contient le design "glassmorphism" et les animations du portfolio.
-- **`vite.config.js`** : Un fichier très important. Il dit à l'outil de construction (Vite) de créer _deux_ sites : le portfolio (`main`) et le jeu (`village_game`).
+- **Site statique** : Le portfolio et ses sous-pages sont servis tels quels, sans build.
 
 ### 2. `village_game/` (Le Jeu)
 
@@ -61,5 +60,5 @@ Si demain vous créez "Project Delta" :
 
 1. Créez un dossier `project_delta/` à la racine.
 2. Mettez-y votre `index.html` et vos fichiers.
-3. Ajoutez une ligne dans `vite.config.js` pour qu'il soit détecté.
+3. Ajoutez un lien vers sa page depuis `index.html`.
 4. Ajoutez une carte (lien) dans le `index.html` principal du portfolio.

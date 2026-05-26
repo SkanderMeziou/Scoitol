@@ -39,7 +39,7 @@ export class Player extends Entity {
 
         // Sprite Animation
         this.sprite = new Image();
-        this.sprite.src = './assets/player_spritesheet.png';
+        this.sprite.src = '../../assets/player_spritesheet.png';
         this.frameWidth = 256;
         this.frameHeight = 256;
         this.totalFrames = 13;
