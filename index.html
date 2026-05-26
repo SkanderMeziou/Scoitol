@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="./ranker.css" />
   <link rel="stylesheet" href="./calculator.css" />
+  <link rel="stylesheet" href="./hilbert.css" />
 </head>
 
 <body>
@@ -33,6 +34,11 @@
       <div class="project-card" id="calc-card">
         <h2 class="card-title">Card Draw Calculator</h2>
         <p class="card-desc">Calculate probability of drawing specific card combos from your deck.</p>
+      </div>
+
+      <div class="project-card hilbert-card" id="hilbert-card">
+        <h2 class="card-title">Hilbert Timeflow</h2>
+        <p class="card-desc">Build a fractal progress bar with presets, save codes, and a live control panel.</p>
       </div>
 
       <a href="./MMM_Master_Money_Maker/" class="project-card">
@@ -122,8 +128,147 @@
     </div>
   </div>
 
+  <!-- Hilbert Modal -->
+  <div id="hilbert-modal" class="modal hidden">
+    <div class="modal-content hilbert-modal-content">
+      <span class="close-modal">&times;</span>
+
+      <div class="hilbert-shell">
+        <aside class="hilbert-drawer hilbert-drawer-left">
+          <div class="hilbert-drawer-header">
+            <p class="hilbert-kicker">Fractal Progress Composer</p>
+            <h2>Hilbert Timeflow</h2>
+            <p>Shape a time-based loading bar with presets, highlight playback, and shareable config codes.</p>
+          </div>
+
+          <div class="hilbert-panel">
+            <label class="hilbert-field">
+              <span>Title</span>
+              <input id="hilbert-title" type="text" value="Hilbert Timeflow" maxlength="48">
+            </label>
+
+            <label class="hilbert-field">
+              <span>Arrival label</span>
+              <input id="hilbert-bubble-label" type="text" value="Checkpoint" maxlength="32">
+            </label>
+
+            <div class="hilbert-field">
+              <span>Preset</span>
+              <div class="segmented" id="hilbert-preset-group">
+                <button type="button" class="segmented-btn active" data-preset="current-hour">Current Hour</button>
+                <button type="button" class="segmented-btn" data-preset="current-day">Current Day</button>
+                <button type="button" class="segmented-btn" data-preset="current-month">Current Month</button>
+                <button type="button" class="segmented-btn" data-preset="custom">Custom</button>
+              </div>
+            </div>
+
+            <div class="hilbert-field-grid">
+              <label class="hilbert-field">
+                <span>Start</span>
+                <input id="hilbert-start-date" type="datetime-local">
+              </label>
+
+              <label class="hilbert-field">
+                <span>End</span>
+                <input id="hilbert-end-date" type="datetime-local">
+              </label>
+            </div>
+          </div>
+
+          <div class="hilbert-panel">
+            <div class="hilbert-panel-head">
+              <h3>Highlight Trail</h3>
+              <label class="toggle">
+                <input id="hilbert-highlight-enabled" type="checkbox" checked>
+                <span class="toggle-ui"></span>
+              </label>
+            </div>
+
+            <div class="hilbert-field-grid trail-grid">
+              <label class="hilbert-field">
+                <span>Retrace</span>
+                <input id="hilbert-highlight-amount" type="number" min="1" value="24">
+              </label>
+
+              <label class="hilbert-field">
+                <span>Unit</span>
+                <select id="hilbert-highlight-unit">
+                  <option value="minutes">Minutes</option>
+                  <option value="hours" selected>Hours</option>
+                  <option value="days">Days</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="hilbert-field">
+              <span>Fractal order</span>
+              <input id="hilbert-order" type="range" min="1" max="7" step="1" value="6">
+              <strong id="hilbert-order-value">6</strong>
+            </label>
+          </div>
+        </aside>
+
+        <section class="hilbert-stage">
+          <div class="hilbert-stage-topbar">
+            <div>
+              <p class="hilbert-stage-label">Live Preview</p>
+              <h3 id="hilbert-preview-title">Hilbert Timeflow</h3>
+            </div>
+            <div class="hilbert-status-pill" id="hilbert-status-pill">Tracking now</div>
+          </div>
+
+          <div class="hilbert-canvas-frame">
+            <canvas id="hilbert-canvas" width="1200" height="1200"></canvas>
+          </div>
+        </section>
+
+        <aside class="hilbert-drawer hilbert-drawer-right">
+          <div class="hilbert-panel">
+            <div class="hilbert-panel-head">
+              <h3>Share Code</h3>
+              <button id="hilbert-generate-code" type="button" class="hilbert-secondary-btn">Refresh code</button>
+            </div>
+
+            <label class="hilbert-field">
+              <span>Save / load this setup</span>
+              <textarea id="hilbert-code" rows="9" spellcheck="false"></textarea>
+            </label>
+
+            <div class="hilbert-actions">
+              <button id="hilbert-copy-code" type="button" class="hilbert-secondary-btn">Copy code</button>
+              <button id="hilbert-load-code" type="button" class="hilbert-primary-btn">Load code</button>
+            </div>
+          </div>
+
+          <div class="hilbert-panel">
+            <h3>Snapshot</h3>
+            <dl class="hilbert-stats">
+              <div>
+                <dt>Progress</dt>
+                <dd id="hilbert-stat-progress">0%</dd>
+              </div>
+              <div>
+                <dt>Remaining</dt>
+                <dd id="hilbert-stat-remaining">0h</dd>
+              </div>
+              <div>
+                <dt>Preset</dt>
+                <dd id="hilbert-stat-preset">Current Hour</dd>
+              </div>
+              <div>
+                <dt>Highlight</dt>
+                <dd id="hilbert-stat-highlight">24 hours</dd>
+              </div>
+            </dl>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="./ranker.js"></script>
   <script type="module" src="./calculator.js"></script>
+  <script type="module" src="./hilbert.js"></script>
 </body>
 
 </html>
