@@ -10,51 +10,6 @@ export class Joystick {
         this.touchId = null;
         this.value = { x: 0, y: 0 };
 
-        // Events
-        window.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
-        window.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
-        window.addEventListener('touchend', (e) => this.onTouchEnd(e));
-    }
-
-    onTouchStart(e) {
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            const touch = e.changedTouches[i];
-            const dist = Math.hypot(touch.clientX - this.baseX, touch.clientY - this.baseY);
-            if (dist < this.radius * 2) { // Allow some leniency
-                this.touchId = touch.identifier;
-                this.active = true;
-                this.value = { x: 0, y: 0 }; // Reset
-                this.updateStickPosition(touch.clientX, touch.clientY);
-                e.preventDefault();
-                break;
-            }
-        }
-    }
-
-    onTouchMove(e) {
-        if (!this.active) return;
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            if (e.changedTouches[i].identifier === this.touchId) {
-                const touch = e.changedTouches[i];
-                this.updateStickPosition(touch.clientX, touch.clientY);
-                e.preventDefault(); // Prevent scrolling
-                break;
-            }
-        }
-    }
-
-    onTouchEnd(e) {
-        if (!this.active) return;
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            if (e.changedTouches[i].identifier === this.touchId) {
-                this.active = false;
-                this.touchId = null;
-                this.stickX = this.baseX;
-                this.stickY = this.baseY;
-                this.value = { x: 0, y: 0 };
-                break;
-            }
-        }
     }
 
     updateStickPosition(x, y) {

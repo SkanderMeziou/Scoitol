@@ -4,6 +4,7 @@ import { Building } from './Building.js';
 import { Seed } from './Seed.js';
 import { Config } from '../game/Config.js';
 import { Recipes } from '../game/Recipes.js';
+import { constrainToArena, isInsideArena } from '../game/Arena.js';
 
 export class Player extends Entity {
     constructor(x, y, input) {
@@ -53,18 +54,11 @@ export class Player extends Entity {
     }
 
     update(dt, entities) {
-        // Transform mouse to world coordinates if zoomed
-        const mouseWorldX = this.game ? this.getWorldX(this.input.mouse.x) : this.input.mouse.x;
-        const mouseWorldY = this.game ? this.getWorldY(this.input.mouse.y) : this.input.mouse.y;
-
-        // Handle Sidebar Clicks
-        if (this.input.mouse.left && this.game && this.game.buildMenu) {
-            // Check if click is consumed by UI
-            if (this.game.buildMenu.handleClick(this.input.mouse.x, this.input.mouse.y)) {
-                // Click consumed by UI, do not build or move
-                return null;
-            }
-        }
+        const buildPoint = this.input.buildPoint;
+        this.input.buildPoint = null;
+        const pointer = buildPoint || this.input.mouse;
+        const mouseWorldX = this.game ? this.getWorldX(pointer.x) : pointer.x;
+        const mouseWorldY = this.game ? this.getWorldY(pointer.y) : pointer.y;
 
         const movement = this.input.getMovement();
 
@@ -88,12 +82,8 @@ export class Player extends Entity {
             if (movement.x > 0) this.facingRight = true;
             if (movement.x < 0) this.facingRight = false;
 
-            // World Boundaries Clamp
-            if (this.game && this.game.worldSize) {
-                const limit = this.game.worldSize / 2;
-                this.x = Math.max(-limit, Math.min(limit, this.x));
-                this.y = Math.max(-limit, Math.min(limit, this.y));
-            }
+            // Keep the entire ghost inside the field, including squircle corners.
+            Object.assign(this, constrainToArena(this.x, this.y, 32));
 
             // Trail Effect with Offset
             if (this.game && this.game.particleSystem && Math.random() > 0.7) {
@@ -135,10 +125,8 @@ export class Player extends Entity {
         }
 
         // Build on Click
-        if (this.input.mouse.left && this.selectedBuild) {
-            // Check if mouse is over DOM elements (build menu, etc)
-            // Also check if over Sidebar (BuildMenu)
-            const mouseOverUI = this.isMouseOverUI() || (this.game && this.game.buildMenu && this.game.buildMenu.handleClick(this.input.mouse.x, this.input.mouse.y));
+        if ((this.input.mouse.left || buildPoint) && this.selectedBuild) {
+            const mouseOverUI = buildPoint ? !isInsideArena(buildPoint.x, buildPoint.y) : !this.input.mouse.inside;
 
             if (!mouseOverUI && this.buildCooldown <= 0) {
                 const newEntity = this.tryBuild(entities, mouseWorldX, mouseWorldY);
@@ -159,12 +147,6 @@ export class Player extends Entity {
         return (screenY - this.game.centerY) / this.game.currentZoomScale + this.game.centerY;
     }
 
-    isMouseOverUI() {
-        // Simple check if mouse is on the right side where the menu is
-        // But BuildMenu handles its own hit detection now
-        return false;
-    }
-
     tryBuild(entities, mouseX, mouseY) {
         if (!this.selectedBuild) return null;
 
@@ -175,6 +157,8 @@ export class Player extends Entity {
         const gridSize = 50;
         const gridX = Math.round(mouseX / gridSize) * gridSize;
         const gridY = Math.round(mouseY / gridSize) * gridSize;
+
+        if (!isInsideArena(gridX, gridY, 30)) return null;
 
         // Collision Check (Strict Grid Occupancy)
         for (const entity of entities) {
@@ -288,7 +272,7 @@ export class Player extends Entity {
         }
 
         // Build Mode Preview - draw at WORLD coordinates
-        if (this.selectedBuild) {
+        if (this.selectedBuild && this.input.mouse.inside && this.game?.gameState === 'PLAYING') {
             // Get world coordinates for mouse
             const worldX = this.game ? this.getWorldX(this.input.mouse.x) : this.input.mouse.x;
             const worldY = this.game ? this.getWorldY(this.input.mouse.y) : this.input.mouse.y;
@@ -298,7 +282,8 @@ export class Player extends Entity {
             const gridX = Math.round(worldX / gridSize) * gridSize;
             const gridY = Math.round(worldY / gridSize) * gridSize;
 
-            ctx.strokeStyle = '#2ecc71';
+            const valid = isInsideArena(gridX, gridY, 30) && this.canAfford(Recipes[this.selectedBuild].cost);
+            ctx.strokeStyle = valid ? '#426342' : '#b6664c';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(gridX, gridY, 25, 0, Math.PI * 2);

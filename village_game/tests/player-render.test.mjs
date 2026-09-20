@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { test } from 'node:test';
 import { Player } from '../src/entities/Player.js';
 import { Game } from '../src/game/Game.js';
-import { BuildMenu } from '../src/ui/BuildMenu.js';
+import { House } from '../src/entities/House.js';
 
 globalThis.Image = class {
     complete = false;
@@ -31,13 +31,44 @@ function createScene() {
         gameState: 'PLAYING',
         turrets: [], buildings: [], entities: [player],
         currentZoomScale: 1, step: 1 / 60,
-        particleSystem: { draw() {} },
+        shakeDuration: 0, shakeIntensity: 0,
+        particleSystem: { draw() {}, createExplosion() {} },
         house: { health: 100 }
     });
     player.game = game;
-    game.buildMenu = new BuildMenu(game);
     return { game, player, calls };
 }
+
+test('damage and enemy deaths trigger a clipped world shake, leaving the UI steady', () => {
+    const { game, calls } = createScene();
+    const house = new House(600, 375, game);
+    game.handleEntityDeath({ type: 'enemy', x: 100, y: 100 });
+    assert.equal(game.shakeIntensity, 2);
+    assert.equal(game.shakeDuration, 0.2);
+    house.takeDamage(10);
+    game.handleEntityDeath({ type: 'enemy', x: 100, y: 100 });
+    assert.equal(game.shakeIntensity, 5, 'kill effects preserve stronger damage impacts');
+    assert.equal(game.shakeDuration, 0.3);
+
+    game.drawTooltips = () => calls.push(['tooltip']);
+    game.render();
+    const translation = calls.findIndex(([method]) => method === 'translate');
+    assert.ok(translation > calls.findIndex(([method]) => method === 'clip'));
+    assert.ok(Math.abs(calls[translation][1]) <= 2.5);
+    assert.ok(Math.abs(calls[translation][2]) <= 2.5);
+    const tooltip = calls.findIndex(([method]) => method === 'tooltip');
+    assert.equal(calls[tooltip - 1][0], 'restore');
+    assert.ok(tooltip > translation);
+});
+
+test('the world stays still after shake expiry, while paused, or with reduced motion', () => {
+    for (const state of [{ shakeDuration: 0 }, { isPaused: true }, { reducedMotion: { matches: true } }]) {
+        const { game, calls } = createScene();
+        Object.assign(game, { shakeDuration: 0.3, shakeIntensity: 5 }, state);
+        game.render();
+        assert.ok(!calls.some(([method]) => method === 'translate'));
+    }
+});
 
 test('the ghost sprite resolves to the existing game asset', () => {
     const { player } = createScene();
@@ -47,15 +78,13 @@ test('the ghost sprite resolves to the existing game asset', () => {
 });
 
 for (const state of ['loading', 'broken', 'loaded']) {
-    test(`the player and store render when the sprite is ${state}`, () => {
+    test(`the field renders when the sprite is ${state}`, () => {
         const { game, player, calls } = createScene();
         player.sprite.complete = state !== 'loading';
         player.sprite.naturalWidth = state === 'loaded' ? 3328 : 0;
 
         assert.doesNotThrow(() => game.render());
-        assert.ok(calls.some(([method, x, y, width, height]) =>
-            method === 'fillRect' && x === 940 && y === 0 && width === 60 && height === 800
-        ), 'the store sidebar must render after the player');
+        assert.equal(calls.at(-1)[0], 'restore', 'the field render must finish');
         if (state === 'loaded') {
             assert.ok(calls.some(([method]) => method === 'drawImage'));
         } else {

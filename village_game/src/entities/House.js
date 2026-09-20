@@ -55,12 +55,18 @@ export class House extends Entity {
         const x = this.x - width / 2;
         const y = this.y - this.radius - 20;
 
-        ctx.fillStyle = '#333';
-        ctx.fillRect(x, y, width, height);
+        ctx.fillStyle = '#a8bc91';
+        ctx.beginPath();
+        ctx.roundRect(x, y, width, height, 4);
+        ctx.fill();
 
         const healthPct = Math.max(0, this.health / this.maxHealth);
-        ctx.fillStyle = '#e74c3c';
-        ctx.fillRect(x, y, width * healthPct, height);
+        ctx.fillStyle = healthPct > 0.3 ? '#658454' : '#b6664c';
+        if (healthPct > 0) {
+            ctx.beginPath();
+            ctx.roundRect(x, y, width * healthPct, height, 4);
+            ctx.fill();
+        }
     }
 
     takeDamage(amount) {

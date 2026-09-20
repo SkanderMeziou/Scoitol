@@ -10,19 +10,19 @@ import { ParticleSystem } from './ParticleSystem.js';
 import { Config } from './Config.js';
 import { Resource } from '../entities/Resource.js';
 import { WaveConfig } from './WaveConfig.js';
+import { ARENA_WIDTH, ARENA_HEIGHT, constrainToArena, arenaPath } from './Arena.js';
 
 
 export class Game {
     constructor() {
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
-        document.getElementById('app').appendChild(this.canvas);
+        document.getElementById('arena').prepend(this.canvas);
+        this.canvas.setAttribute('aria-label', 'Village Defense playing field');
 
         this.resize();
-        window.addEventListener('resize', () => this.resize());
 
-        this.input = new Input();
-
+        this.input = new Input(this.canvas);
         // Center of the map
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
@@ -50,10 +50,7 @@ export class Game {
 
         // Spawn resources
         for (let i = 0; i < 20; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const dist = 200 + Math.random() * 400;
-            const x = centerX + Math.cos(angle) * dist;
-            const y = centerY + Math.sin(angle) * dist;
+            const { x, y } = this.resourcePosition();
             const type = Math.random() > 0.5 ? 'tree' : 'rock';
             const res = new Resource(x, y, type);
             this.entities.push(res);
@@ -73,33 +70,49 @@ export class Game {
         this.resourceSpawnTimer = Config.RESOURCE_SPAWN_TIMER;
 
         // World Boundaries
-        this.worldSize = Config.WORLD_SIZE;
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        this.worldSize = ARENA_WIDTH;
 
         this.shakeDuration = 0;
         this.shakeIntensity = 0;
+        this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
         this.isRunning = false;
     }
 
     resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        this.canvas.width = ARENA_WIDTH;
+        this.canvas.height = ARENA_HEIGHT;
     }
 
     start() {
         this.isRunning = true;
         this.lastTime = performance.now();
 
-        // Handle clicks for state transitions
-        this.canvas.addEventListener('click', () => {
-            if (this.gameState === 'START') {
-                this.gameState = 'PLAYING';
-            } else if (this.gameState === 'GAMEOVER') {
-                // Reset game
+        const overlay = document.getElementById('game-overlay');
+        document.getElementById('start-button').addEventListener('click', () => {
+            if (this.gameState === 'GAMEOVER') {
                 location.reload();
+                return;
             }
+            this.gameState = 'PLAYING';
+            this.isPaused = false;
+            this.input.reset();
+            overlay.hidden = true;
+            document.getElementById('pause-button').textContent = 'Ⅱ Pause';
+            document.getElementById('pause-button').setAttribute('aria-label', 'Pause game');
         });
+        document.getElementById('pause-button').addEventListener('click', () => {
+            if (this.gameState !== 'PLAYING' || this.encyclopedia.visible) return;
+            this.isPaused = !this.isPaused;
+            this.input.reset();
+            overlay.hidden = !this.isPaused;
+            overlay.querySelector('h2').hidden = false;
+            overlay.querySelector('h2').textContent = 'Paused';
+            overlay.querySelector('p').hidden = true;
+            document.getElementById('start-button').textContent = 'Resume';
+            document.getElementById('pause-button').textContent = this.isPaused ? '▶ Resume' : 'Ⅱ Pause';
+            document.getElementById('pause-button').setAttribute('aria-label', this.isPaused ? 'Resume game' : 'Pause game');
+        });
+        this.hud.update();
 
         requestAnimationFrame((time) => this.loop(time));
     }
@@ -207,12 +220,6 @@ export class Game {
 
         this.hud.update();
 
-        // Handle scroll for build menu
-        const wheelDelta = this.input.consumeWheel();
-        if (wheelDelta !== 0) {
-            this.buildMenu.handleScroll(wheelDelta);
-        }
-
         this.buildMenu.update(dt);
         this.encyclopedia.update();
     }
@@ -284,17 +291,10 @@ export class Game {
     }
 
     spawnEnemy() {
-        const angle = Math.random() * Math.PI * 2;
-        // Adjust spawn distance based on zoom
-        const baseDistance = Math.max(this.canvas.width, this.canvas.height) / 2 + 100;
-
-        const zoomFactor = this.currentZoomScale || 1.0;
-        const dist = baseDistance / zoomFactor;
-
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height / 2;
-        const x = centerX + Math.cos(angle) * dist;
-        const y = centerY + Math.sin(angle) * dist;
+        const side = Math.floor(Math.random() * 4);
+        const edgeX = side === 0 ? 0 : side === 1 ? ARENA_WIDTH : Math.random() * ARENA_WIDTH;
+        const edgeY = side === 2 ? 0 : side === 3 ? ARENA_HEIGHT : Math.random() * ARENA_HEIGHT;
+        const { x, y } = constrainToArena(edgeX, edgeY, 30);
 
         if (!this.currentRoundType || this.currentRoundWave !== this.wave) {
             this.currentRoundWave = this.wave;
@@ -362,12 +362,7 @@ export class Game {
     }
 
     spawnResource() {
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height / 2;
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 200 + Math.random() * 400;
-        const x = centerX + Math.cos(angle) * dist;
-        const y = centerY + Math.sin(angle) * dist;
+        const { x, y } = this.resourcePosition();
 
         // Weighted random for resources - gated by wave
         const rand = Math.random();
@@ -386,118 +381,54 @@ export class Game {
         this.addEntity(new Resource(x, y, type));
     }
 
+    resourcePosition() {
+        let point;
+        do {
+            point = constrainToArena(45 + Math.random() * (ARENA_WIDTH - 90),
+                45 + Math.random() * (ARENA_HEIGHT - 90), 45);
+        } while (Math.hypot(point.x - ARENA_WIDTH / 2, point.y - ARENA_HEIGHT / 2) < 110);
+        return point;
+    }
+
     render() {
-        this.ctx.fillStyle = Config.BACKGROUND_COLOR;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        if (this.gameState === 'START') {
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = '48px monospace';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('VILLAGE DEFENSE', this.canvas.width / 2, this.canvas.height / 2 - 100);
-
-            this.ctx.font = '24px monospace';
-            this.ctx.fillText('Click to Start', this.canvas.width / 2, this.canvas.height / 2 + 100);
-
-            this.ctx.textAlign = 'left';
-            const instructions = [
-                "Controls:",
-                "- WASD / ZQSD / Arrows to Move",
-                "- The build menu is docked on the right.",
-                "- Protect the House!"
-            ];
-
-            let y = this.canvas.height / 2 - 20;
-            instructions.forEach(line => {
-                this.ctx.fillText(line, this.canvas.width / 2 - 250, y);
-                y += 30;
-            });
-            return;
-        }
-
-        // Dynamic Zoom Logic
-        const buildingCount = this.turrets.length + this.buildings.length;
-
-        let targetScale = 1.0;
-        if (buildingCount > 20) {
-            const progress = Math.min(1.0, (buildingCount - 20) / 80);
-            const curve = Math.sqrt(progress);
-            targetScale = 1.0 - (curve * 0.5);
-        }
-
-        // Smooth zoom transition
-        if (!this.currentZoomScale) this.currentZoomScale = targetScale;
-        const lerpSpeed = 2.0;
-        this.currentZoomScale += (targetScale - this.currentZoomScale) * lerpSpeed * this.step;
-
-        const scale = this.currentZoomScale;
-
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.save();
-
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height / 2;
-
-        this.centerX = centerX;
-        this.centerY = centerY;
-
-        this.ctx.translate(centerX, centerY);
-
-        // Apply Screen Shake
-        if (this.shakeDuration > 0) {
-            const dx = (Math.random() - 0.5) * this.shakeIntensity;
-            const dy = (Math.random() - 0.5) * this.shakeIntensity;
-            this.ctx.translate(dx, dy);
+        arenaPath(this.ctx);
+        this.ctx.clip();
+        this.ctx.fillStyle = '#cadbb5';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Shake the world inside its fixed clip; keep the UI and pointer coordinates steady.
+        this.ctx.save();
+        if (this.shakeDuration > 0 && this.gameState === 'PLAYING' && !this.isPaused && !this.reducedMotion?.matches) {
+            this.ctx.translate(
+                (Math.random() - 0.5) * this.shakeIntensity,
+                (Math.random() - 0.5) * this.shakeIntensity
+            );
         }
-
-        this.ctx.scale(scale, scale);
-        this.ctx.translate(-centerX, -centerY);
-
         this.drawGrid();
-
-        // CULLING OPTIMIZATION
-        const viewportPadding = 100;
-        const viewLeft = centerX - (centerX / scale) - viewportPadding;
-        const viewTop = centerY - (centerY / scale) - viewportPadding;
-        const viewRight = centerX + ((this.canvas.width - centerX) / scale) + viewportPadding;
-        const viewBottom = centerY + ((this.canvas.height - centerY) / scale) + viewportPadding;
-
-        this.entities.forEach(entity => {
-            if (entity.x + entity.radius > viewLeft &&
-                entity.x - entity.radius < viewRight &&
-                entity.y + entity.radius > viewTop &&
-                entity.y - entity.radius < viewBottom) {
-                entity.draw(this.ctx);
-            }
-        });
-
+        this.entities.forEach(entity => entity.draw(this.ctx));
         this.particleSystem.draw(this.ctx);
-
+        this.ctx.restore();
+        if (this.gameState === 'PLAYING') this.drawTooltips();
+        if (this.input.joystick) this.input.joystick.draw(this.ctx);
         this.ctx.restore();
 
-        // Draw UI
-        this.buildMenu.draw(this.ctx);
-        this.drawTooltips();
-
-        if (this.input.joystick) {
-            this.input.joystick.draw(this.ctx);
-        }
-
-        if (this.house.health <= 0) {
+        if (this.house.health <= 0 && this.gameState !== 'GAMEOVER') {
             this.gameState = 'GAMEOVER';
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = '48px monospace';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('GAME OVER', this.canvas.width / 2, this.canvas.height / 2);
-            this.ctx.font = '24px monospace';
-            this.ctx.fillText('Click to Restart', this.canvas.width / 2, this.canvas.height / 2 + 50);
+            this.input.reset();
+            const overlay = document.getElementById('game-overlay');
+            overlay.hidden = false;
+            overlay.querySelector('h2').hidden = false;
+            overlay.querySelector('h2').textContent = 'Game over';
+            overlay.querySelector('p').hidden = false;
+            overlay.querySelector('p').textContent = `Wave ${this.wave}`;
+            document.getElementById('start-button').textContent = 'Play again';
+            this.hud.update();
         }
     }
 
     drawGrid() {
-        this.ctx.strokeStyle = Config.GRID_COLOR;
+        this.ctx.strokeStyle = '#bed0a9';
         this.ctx.lineWidth = 1;
         const gridSize = 50;
 
@@ -532,68 +463,41 @@ export class Game {
     }
 
     drawTooltips() {
-        const mouseX = this.input.mouse.x;
-        const mouseY = this.input.mouse.y;
-
-        const scale = this.currentZoomScale || 1.0;
-        const worldX = (mouseX - (this.canvas.width / 2)) / scale + this.centerX;
-        const worldY = (mouseY - (this.canvas.height / 2)) / scale + this.centerY;
-
-        for (const entity of this.entities) {
-            const dist = Math.hypot(worldX - entity.x, worldY - entity.y);
-
-            if (entity.type === 'turret' && dist < entity.radius + 15) {
-                const dps = (entity.damage / entity.fireRate).toFixed(1);
-                const text = `${entity.turretType.toUpperCase()} | DMG: ${entity.damage} | Rate: ${entity.fireRate.toFixed(2)}s | DPS: ${dps} | Range: ${entity.range}`;
-
-                this.ctx.save();
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                const textWidth = this.ctx.measureText(text).width + 20;
-                this.ctx.fillRect(mouseX + 10, mouseY - 35, Math.min(textWidth, 500), 28);
-                this.ctx.fillStyle = '#f1c40f';
-                this.ctx.font = 'bold 14px monospace';
-                this.ctx.fillText(text, mouseX + 15, mouseY - 14);
-                this.ctx.restore();
-                return;
-            } else if (entity.type === 'enemy' && dist < entity.radius + 15) {
-                const text = `HP: ${Math.ceil(entity.health)}/${Math.ceil(entity.maxHealth)}`;
-
-                this.ctx.save();
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                this.ctx.fillRect(mouseX + 10, mouseY - 35, 160, 28);
-                this.ctx.fillStyle = '#e74c3c';
-                this.ctx.font = 'bold 14px monospace';
-                this.ctx.fillText(text, mouseX + 15, mouseY - 14);
-                this.ctx.restore();
-                return;
-            } else if (entity.type === 'player' && dist < entity.radius + 15) {
-                const buffs = [];
-                if (entity.buffs.attackDamage > 1.0) {
-                    buffs.push(`ATK: x${entity.buffs.attackDamage.toFixed(1)}`);
-                }
-                if (entity.buffs.speed > 1.0) {
-                    buffs.push(`SPD: x${entity.buffs.speed.toFixed(1)}`);
-                }
-
-                if (buffs.length > 0) {
-                    const text = buffs.join(' | ');
-
-                    this.ctx.save();
-                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                    const textWidth = this.ctx.measureText(text).width + 20;
-                    this.ctx.fillRect(mouseX + 10, mouseY - 35, textWidth, 28);
-                    this.ctx.fillStyle = '#f39c12';
-                    this.ctx.font = 'bold 14px monospace';
-                    this.ctx.fillText(text, mouseX + 15, mouseY - 14);
-                    this.ctx.restore();
-                    return;
-                }
-            }
-        }
+        if (!this.input.mouse.inside) return;
+        const { x, y } = this.input.mouse;
+        const entity = this.entities.find(entity =>
+            ['turret', 'enemy'].includes(entity.type) && Math.hypot(x - entity.x, y - entity.y) < entity.radius + 15);
+        if (!entity) return;
+        const title = entity.type === 'turret' ? entity.turretType.replaceAll('_', ' ') : 'Incoming enemy';
+        const detail = entity.type === 'turret'
+            ? `Damage ${entity.damage}  ·  ${(entity.damage / entity.fireRate).toFixed(1)} DPS  ·  Range ${entity.range}`
+            : `Health ${Math.ceil(entity.health)} / ${Math.ceil(entity.maxHealth)}`;
+        this.ctx.save();
+        this.ctx.font = '13px Arial';
+        const width = Math.max(this.ctx.measureText(title).width, this.ctx.measureText(detail).width) + 28;
+        const left = Math.max(30, Math.min(x + 18, ARENA_WIDTH - width - 30));
+        const top = Math.max(30, Math.min(y - 76, ARENA_HEIGHT - 92));
+        this.ctx.fillStyle = 'rgba(45, 48, 46, 0.18)';
+        this.ctx.beginPath();
+        this.ctx.roundRect(left, top + 4, width, 60, 14);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#f7f6f0';
+        this.ctx.beginPath();
+        this.ctx.roundRect(left, top, width, 60, 14);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#31533d';
+        this.ctx.textAlign = 'left';
+        this.ctx.font = 'bold 14px Arial';
+        this.ctx.fillText(title, left + 14, top + 23);
+        this.ctx.font = '13px Arial';
+        this.ctx.fillStyle = '#738068';
+        this.ctx.fillText(detail, left + 14, top + 43);
+        this.ctx.restore();
     }
 
     screenShake(intensity, duration) {
-        this.shakeIntensity = intensity;
-        this.shakeDuration = duration;
+        // A small kill effect must not overwrite a stronger damage impact.
+        this.shakeIntensity = Math.max(this.shakeIntensity, intensity);
+        this.shakeDuration = Math.max(this.shakeDuration, duration);
     }
 }

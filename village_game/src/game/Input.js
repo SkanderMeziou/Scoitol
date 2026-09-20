@@ -1,108 +1,100 @@
 import { Joystick } from './Joystick.js';
+import { isInsideArena } from './Arena.js';
 
 export class Input {
-    constructor() {
+    constructor(canvas) {
+        this.canvas = canvas;
         this.keys = new Set();
-        this.mouse = { x: 0, y: 0, left: false, right: false };
-        this.wheelDelta = 0;
-
-        window.addEventListener('keydown', (e) => this.onKeyDown(e));
-        window.addEventListener('keyup', (e) => this.onKeyUp(e));
-        window.addEventListener('mousemove', (e) => this.onMouseMove(e));
-        window.addEventListener('mousedown', (e) => this.onMouseDown(e));
-        window.addEventListener('mouseup', (e) => this.onMouseUp(e));
-        window.addEventListener('contextmenu', (e) => e.preventDefault());
-        window.addEventListener('wheel', (e) => this.onWheel(e), { passive: false });
-
-        // Virtual Joystick
-        this.joystick = new Joystick(100, window.innerHeight - 100, 50);
-        // Resize listener to update joystick position? 
-        // We'll handle resize in Game.js/resize likely, or just fixed position for now based on initial window
+        this.mouse = { x: 0, y: 0, left: false, right: false, inside: false };
+        this.joystick = new Joystick(100, canvas.height - 100, 50);
+        this.movePointer = null;
+        this.buildPoint = null;
+        window.addEventListener('keydown', event => {
+            if (event.target.closest('input, textarea, dialog')) return;
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) event.preventDefault();
+            this.keys.add(event.code);
+        });
+        window.addEventListener('keyup', event => this.keys.delete(event.code));
+        window.addEventListener('blur', () => this.reset());
+        document.addEventListener('visibilitychange', () => { if (document.hidden) this.reset(); });
+        canvas.addEventListener('pointermove', event => {
+            const point = this.position(event);
+            if (event.pointerId === this.movePointer) {
+                if (Math.hypot(point.x - this.joystick.baseX, point.y - this.joystick.baseY) > 10) this.touchMoved = true;
+                this.joystick.updateStickPosition(point.x, point.y);
+            } else this.updateMouse(point);
+        });
+        canvas.addEventListener('pointerdown', event => {
+            const point = this.position(event);
+            if (!isInsideArena(point.x, point.y)) return;
+            canvas.setPointerCapture(event.pointerId);
+            if (event.pointerType === 'touch' && point.x < canvas.width / 2 && this.movePointer === null) {
+                this.movePointer = event.pointerId;
+                this.touchMoved = false;
+                Object.assign(this.joystick, { baseX: point.x, baseY: point.y, stickX: point.x, stickY: point.y, active: true });
+            } else {
+                this.updateMouse(point);
+                if (event.button === 0) this.mouse.left = true;
+            }
+        });
+        const release = event => {
+            if (event.type === 'pointerup' && event.pointerType === 'touch' &&
+                (event.pointerId !== this.movePointer || !this.touchMoved)) {
+                this.buildPoint = this.position(event);
+            }
+            if (event.pointerId === this.movePointer) {
+                this.movePointer = null;
+                this.joystick.active = false;
+                this.joystick.value = { x: 0, y: 0 };
+            } else this.mouse.left = false;
+        };
+        canvas.addEventListener('pointerup', release);
+        canvas.addEventListener('pointercancel', release);
+        canvas.addEventListener('lostpointercapture', release);
+        canvas.addEventListener('pointerleave', () => { this.mouse.inside = false; });
+        canvas.addEventListener('contextmenu', event => event.preventDefault());
     }
 
-    onKeyDown(e) {
-        this.keys.add(e.code);
+    position(event) {
+        const rect = this.canvas.getBoundingClientRect();
+        return { x: (event.clientX - rect.left) * this.canvas.width / rect.width,
+            y: (event.clientY - rect.top) * this.canvas.height / rect.height };
     }
 
-    onKeyUp(e) {
-        this.keys.delete(e.code);
+    updateMouse(point) {
+        Object.assign(this.mouse, point, { inside: isInsideArena(point.x, point.y) });
     }
 
-    onMouseMove(e) {
-        this.mouse.x = e.clientX;
-        this.mouse.y = e.clientY;
+    reset() {
+        this.keys.clear();
+        this.buildPoint = null;
+        this.mouse.left = false;
+        this.mouse.inside = false;
+        this.movePointer = null;
+        this.joystick.active = false;
+        this.joystick.value = { x: 0, y: 0 };
     }
 
-    onMouseDown(e) {
-        if (e.button === 0) this.mouse.left = true;
-        if (e.button === 2) this.mouse.right = true;
-    }
-
-    onMouseUp(e) {
-        if (e.button === 0) this.mouse.left = false;
-        if (e.button === 2) this.mouse.right = false;
-    }
-
-    onWheel(e) {
-        this.wheelDelta = e.deltaY;
-    }
-
-    consumeWheel() {
-        const delta = this.wheelDelta;
-        this.wheelDelta = 0;
-        return delta;
-    }
-
-    isDown(code) {
-        return this.keys.has(code);
-    }
+    isDown(code) { return this.keys.has(code); }
 
     getMovement() {
-        let x = 0;
-        let y = 0;
-
-        // Up
-        if (this.isDown('KeyW') || this.isDown('KeyZ') || this.isDown('ArrowUp')) y -= 1;
-        // Down
-        if (this.isDown('KeyS') || this.isDown('ArrowDown')) y += 1;
-        // Left
-        if (this.isDown('KeyA') || this.isDown('KeyQ') || this.isDown('ArrowLeft')) x -= 1;
-        // Right
-        // Right
-        if (this.isDown('KeyD') || this.isDown('ArrowRight')) x += 1;
-
-        // Joystick
-        if (this.joystick.active) {
-            x = this.joystick.value.x;
-            y = this.joystick.value.y;
+        let x = 0, y = 0;
+        if (this.isDown('KeyW') || this.isDown('KeyZ') || this.isDown('ArrowUp')) y--;
+        if (this.isDown('KeyS') || this.isDown('ArrowDown')) y++;
+        if (this.isDown('KeyA') || this.isDown('KeyQ') || this.isDown('ArrowLeft')) x--;
+        if (this.isDown('KeyD') || this.isDown('ArrowRight')) x++;
+        if (this.joystick.active) ({ x, y } = this.joystick.value);
+        for (const gp of navigator.getGamepads?.() || []) {
+            if (!gp) continue;
+            if (Math.abs(gp.axes[0]) > 0.1) x = gp.axes[0];
+            if (Math.abs(gp.axes[1]) > 0.1) y = gp.axes[1];
+            if (gp.buttons[12]?.pressed) y--;
+            if (gp.buttons[13]?.pressed) y++;
+            if (gp.buttons[14]?.pressed) x--;
+            if (gp.buttons[15]?.pressed) x++;
+            break;
         }
-
-        // Gamepad
-        const gamepads = navigator.getGamepads();
-        if (gamepads) {
-            for (const gp of gamepads) {
-                if (gp) {
-                    // Axis 0: Left Stick X
-                    // Axis 1: Left Stick Y
-                    if (Math.abs(gp.axes[0]) > 0.1) x = gp.axes[0];
-                    if (Math.abs(gp.axes[1]) > 0.1) y = gp.axes[1];
-                    // D-Pad usually mapped to axes or buttons depending on browser/pad
-                    // Button 12, 13, 14, 15 are Up, Down, Left, Right usually
-                    if (gp.buttons[12].pressed) y -= 1;
-                    if (gp.buttons[13].pressed) y += 1;
-                    if (gp.buttons[14].pressed) x -= 1;
-                    if (gp.buttons[15].pressed) x += 1;
-                    break; // Use first gamepad
-                }
-            }
-        }
-
-        const len = Math.hypot(x, y);
-        if (len > 1.0) {
-            x /= len;
-            y /= len;
-        }
-
-        return { x, y };
+        const length = Math.hypot(x, y);
+        return length > 1 ? { x: x / length, y: y / length } : { x, y };
     }
 }

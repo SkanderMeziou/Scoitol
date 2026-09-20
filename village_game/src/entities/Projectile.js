@@ -157,11 +157,6 @@ export class Projectile extends Entity {
             ctx.lineTo(10, 0);  // Head
             ctx.stroke();
             
-            // Glow
-            ctx.shadowBlur = 5;
-            ctx.shadowColor = this.color;
-            ctx.stroke();
-            ctx.shadowBlur = 0;
         }
         
         ctx.restore();

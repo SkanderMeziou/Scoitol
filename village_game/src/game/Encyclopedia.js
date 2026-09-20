@@ -1,86 +1,31 @@
+import { Recipes } from './Recipes.js';
+
 export class Encyclopedia {
     constructor(game) {
         this.game = game;
         this.visible = false;
-
-        this.container = document.createElement('div');
-        this.container.id = 'encyclopedia';
-        this.container.style.position = 'absolute';
-        this.container.style.top = '10%';
-        this.container.style.left = '10%';
-        this.container.style.width = '80%';
-        this.container.style.height = '80%';
-        this.container.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-        this.container.style.border = '2px solid #f1c40f';
-        this.container.style.borderRadius = '12px';
-        this.container.style.cornerShape = 'squircle';
-        this.container.style.display = 'none';
-        this.container.style.zIndex = '200';
-        this.container.style.padding = '20px';
-        this.container.style.color = 'white';
-        this.container.style.overflowY = 'auto';
-        this.container.style.fontFamily = 'monospace';
-
-        document.getElementById('app').appendChild(this.container);
-
-        // Pause Button
-        this.btn = document.createElement('button');
-        this.btn.innerText = '⏸ Encyclopedia';
-        this.btn.style.position = 'absolute';
-        this.btn.style.top = '10px';
-        this.btn.style.right = '10px';
-        this.btn.style.padding = '10px';
-        this.btn.style.zIndex = '150';
-        this.btn.onclick = () => this.toggle();
-        document.getElementById('app').appendChild(this.btn);
+        this.container = document.getElementById('field-guide');
+        this.container.innerHTML = `<header><div><p class="eyebrow">A FEW FIELD NOTES</p><h2 id="guide-title">Make your village thrive.</h2></div><button class="quiet-button" aria-label="Close field guide">Close ×</button></header><p>Move with WASD, ZQSD or the arrow keys. On a touchscreen, drag on the left half of the field to move. Get close to trees and rocks to collect resources automatically. Choose a build in the shop, then click or tap the field to place it. Protect the house as long as you can.</p><div class="guide-recipes">${Object.values(Recipes).filter(recipe => Object.keys(recipe.cost).every(key => key in game.player.inventory)).map(recipe => `<article><h3>${recipe.subType.replaceAll('_', ' ')}</h3><p>${recipe.description}</p><small>${Object.entries(recipe.cost).map(([name, amount]) => `${amount} ${name}`).join(' · ')}</small></article>`).join('')}</div>`;
+        document.getElementById('guide-button').addEventListener('click', () => this.toggle());
+        this.container.querySelector('button').addEventListener('click', () => this.container.close());
+        this.container.addEventListener('click', event => {
+            if (event.target === this.container) this.container.close();
+        });
+        this.container.addEventListener('close', () => {
+            this.visible = false;
+            game.isPaused = this.wasPaused;
+            game.input.reset();
+        });
     }
 
     toggle() {
-        this.visible = !this.visible;
-        this.container.style.display = this.visible ? 'block' : 'none';
-        this.game.isPaused = this.visible;
-
-        if (this.visible) {
-            this.renderContent();
-        }
+        if (this.visible) { this.container.close(); return; }
+        this.wasPaused = this.game.isPaused;
+        this.visible = true;
+        this.game.isPaused = true;
+        this.game.input.reset();
+        this.container.showModal();
     }
 
-    update() {
-        // Move button left when sidebar menu is expanded
-        const buildMenu = this.game.buildMenu;
-        if (buildMenu && buildMenu.width > 100) {
-            // Sidebar is expanded, move button to the left
-            this.btn.style.right = `${buildMenu.width + 10}px`;
-        } else {
-            // Sidebar is collapsed, button at normal position
-            this.btn.style.right = '10px';
-        }
-    }
-
-    renderContent() {
-        let html = '<h1>Encyclopedia</h1>';
-        html += '<p>Click anywhere outside or the button to close.</p>';
-        html += '<hr>';
-
-        html += '<h2>Turrets & Buildings</h2>';
-        html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">';
-
-        this.game.player.buildOptions.forEach(opt => {
-            const costStr = [];
-            for (const [res, amount] of Object.entries(opt.cost)) {
-                costStr.push(`${amount} ${res}`);
-            }
-
-            html += `
-            <div style="border: 1px solid #555; padding: 10px; border-radius: 8px; corner-shape: squircle;">
-                <strong style="color: #f1c40f;">${opt.name}</strong><br>
-                <small>${opt.type} - ${opt.subType}</small><br>
-                <div style="margin-top: 5px; color: #ccc;">Cost: ${costStr.join(', ')}</div>
-            </div>
-        `;
-        });
-
-        html += '</div>';
-        this.container.innerHTML = html;
-    }
+    update() {}
 }

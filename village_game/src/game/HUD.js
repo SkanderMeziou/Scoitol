@@ -1,81 +1,40 @@
+const symbols = { wood: '▥', stone: '⬡', gold: '●', iron: '▪', crystal: '◇', obsidian: '◆', diamond: '◇', emerald: '◆', ruby: '◆', sapphire: '◆' };
+
 export class HUD {
-  constructor(player) {
-    this.player = player;
-    this.div = document.createElement('div');
-    this.div.id = 'hud';
-    this.div.style.position = 'absolute';
-    this.div.style.top = '10px';
-    this.div.style.left = '10px';
-    this.div.style.color = 'white';
-    this.div.style.fontFamily = 'monospace';
-    this.div.style.fontSize = '14px';
-    document.getElementById('app').appendChild(this.div);
-
-    this.lastInventory = null;
-    this.updateCounter = 0;
-    
-    this.notification = null;
-    this.notificationTimer = 0;
-  }
-
-  showNotification(message, duration = 3) {
-      this.notification = message;
-      this.notificationTimer = duration;
-  }
-
-  update() {
-    // Only update HUD every 5 frames to save performance, unless there are deltas
-    this.updateCounter++;
-    const hasDeltas = Object.keys(this.player.resourceDeltas).length > 0;
-
-    if (!hasDeltas && this.updateCounter % 5 !== 0 && this.notificationTimer <= 0) {
-      return; // Skip update
-    }
-    
-    if (this.notificationTimer > 0) {
-        this.notificationTimer -= 0.1; 
-        this.notificationTimer -= 1/60;
-        if (this.notificationTimer <= 0) this.notification = null;
+    constructor(player) {
+        this.player = player;
+        this.div = document.getElementById('hud');
+        this.div.innerHTML = `<div class="wave-status"><span class="status-dot"></span><strong id="wave-label">Wave 01</strong><span id="wave-timer"></span></div><div class="village-health"><span>HP</span><meter min="0" max="2000" value="2000" aria-label="Village health"></meter><strong id="health-label">100%</strong></div><div class="inventory" aria-label="Resources">${Object.entries(player.inventory).map(([name]) => `<div class="resource-chip" data-resource="${name}" title="${name}"><span class="resource-symbol material-${name}">${symbols[name]}</span><span class="resource-name">${name}</span><strong>0</strong><small></small></div>`).join('')}</div>`;
+        this.updateCounter = 0;
+        this.notificationTimer = 0;
     }
 
-    const formatResource = (name, amount) => {
-      const delta = this.player.resourceDeltas[name.toLowerCase()] || 0;
-      const timer = this.player.deltaTimers[name.toLowerCase()] || 0;
-      const opacity = Math.min(1, timer / 2.0);
+    showNotification(message, duration = 3) {
+        document.getElementById('notification').textContent = message;
+        this.notificationTimer = duration;
+    }
 
-      let deltaHTML = '';
-      if (delta !== 0) {
-        const color = delta > 0 ? '#2ecc71' : '#e74c3c';
-        const sign = delta > 0 ? '+' : '';
-        deltaHTML = ` <span style="color: ${color}; opacity: ${opacity}; margin-left: 5px;">${sign}${delta}</span>`;
-      }
-
-      return `${name}: ${amount}${deltaHTML}`;
-    };
-
-    this.div.innerHTML = `
-      <div style="font-size: 18px; color: #e74c3c; margin-bottom: 10px;">
-        <strong>Wave ${this.player.game.wave}</strong> (${Math.ceil(this.player.game.waveTimer)}s)
-      </div>
-      ${this.notification ? `<div style="background: rgba(0,0,0,0.7); color: #f1c40f; padding: 5px; margin-bottom: 10px; border-radius: 6px; corner-shape: squircle;">${this.notification}</div>` : ''}
-      <div><strong>Inventory</strong></div>
-      ${formatResource('Wood', this.player.inventory.wood)}<br>
-      ${formatResource('Stone', this.player.inventory.stone)}<br>
-      ${formatResource('Gold', this.player.inventory.gold)}<br>
-      <div style="margin-top: 5px; color: #9b59b6;">
-        ${formatResource('Iron', this.player.inventory.iron || 0)}<br>
-        ${formatResource('Crystal', this.player.inventory.crystal || 0)}<br>
-        ${formatResource('Obsidian', this.player.inventory.obsidian || 0)}<br>
-      </div>
-      <div style="margin-top: 5px; color: #3498db;">
-        ${formatResource('Diamond', this.player.inventory.diamond || 0)}<br>
-        ${formatResource('Emerald', this.player.inventory.emerald || 0)}<br>
-        ${formatResource('Ruby', this.player.inventory.ruby || 0)}<br>
-        ${formatResource('Sapphire', this.player.inventory.sapphire || 0)}
-      </div>
-      <div style="margin-top: 10px;">
-        ${this.player.buildMode ? '<strong style="color: #2ecc71;">BUILD MODE ACTIVE</strong>' : 'Press \'B\' to Build'}
-      </div>
-    `;
-  }
+    update() {
+        if (this.notificationTimer > 0) {
+            this.notificationTimer -= 1 / 60;
+            if (this.notificationTimer <= 0) document.getElementById('notification').textContent = '';
+        }
+        if (this.updateCounter++ % 5 !== 0) return;
+        const game = this.player.game;
+        this.div.querySelector('#wave-label').textContent = `Wave ${String(game.wave).padStart(2, '0')}`;
+        this.div.querySelector('#wave-timer').textContent = `${Math.ceil(game.waveTimer)}s`;
+        const health = Math.max(0, game.house.health);
+        const meter = this.div.querySelector('meter');
+        meter.max = game.house.maxHealth;
+        meter.value = health;
+        this.div.querySelector('#health-label').textContent = `${Math.ceil(health / game.house.maxHealth * 100)}%`;
+        this.div.querySelectorAll('[data-resource]').forEach(chip => {
+            const name = chip.dataset.resource;
+            const amount = this.player.inventory[name];
+            chip.hidden = !['wood', 'stone', 'gold'].includes(name) && amount === 0;
+            chip.querySelector('strong').textContent = amount;
+            const delta = this.player.resourceDeltas[name] || 0;
+            chip.querySelector('small').textContent = delta ? `${delta > 0 ? '+' : ''}${delta}` : '';
+        });
+    }
 }

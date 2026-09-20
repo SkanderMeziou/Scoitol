@@ -292,12 +292,6 @@ export class Enemy extends Entity {
             ctx.translate((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 5);
         }
 
-        // Tier Visuals (Aura for high tiers)
-        if (tier >= 4) {
-            ctx.shadowBlur = 10 + (tier - 3) * 5;
-            ctx.shadowColor = this.color;
-        }
-
         ctx.fillStyle = this.color;
 
         // --- Dynamic Shape Generation based on Tier ---
