@@ -39,7 +39,7 @@ export class Player extends Entity {
 
         // Sprite Animation
         this.sprite = new Image();
-        this.sprite.src = '../../assets/player_spritesheet.png';
+        this.sprite.src = new URL('../../assets/player_spritesheet.png', import.meta.url).href;
         this.frameWidth = 256;
         this.frameHeight = 256;
         this.totalFrames = 13;
@@ -234,7 +234,8 @@ export class Player extends Entity {
         const floatY = Math.sin(this.floatTime) * 5; // +/- 5 pixels
 
         // Draw Sprite
-        if (this.sprite && this.sprite.complete) {
+        // Failed images are also complete; only draw successfully loaded sprites.
+        if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
             ctx.save();
             ctx.translate(this.x, this.y + floatY); // Apply float here
             if (!this.facingRight) {
